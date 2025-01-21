@@ -28,6 +28,16 @@
   </description>
 
 
+  <!-- Contrôle d'accès : tout est protégé sauf la consultation publique (voir servlet.AuthFilter) -->
+  <filter>
+    <filter-name>AuthFilter</filter-name>
+    <filter-class>servlet.AuthFilter</filter-class>
+  </filter>
+  <filter-mapping>
+    <filter-name>AuthFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
   <!-- Servlet name definition -->
   <servlet>
     <servlet-class>servlet.RecipeServlet</servlet-class>
