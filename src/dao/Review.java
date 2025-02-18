@@ -299,9 +299,6 @@ public class Review {
         Connection connection = null;
         PreparedStatement statement = null;
         try {
-            RecipeIngredient recipeIngredient = new RecipeIngredient(id);
-            recipeIngredient.deleteFromIdRecipe();
-
             connection = DBConnection.getPostgesConnection();
             connection.setAutoCommit(false);
             statement = connection.prepareStatement(
