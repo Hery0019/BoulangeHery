@@ -84,6 +84,7 @@ public class RecipeSell {
 
             while (resultSet.next()) {
                 int id = resultSet.getInt("id_recipe_sell");
+                int idVendeur = resultSet.getInt("id_vendeur");
                 int idRecipe = resultSet.getInt("id_recipe");
                 int idCategory = resultSet.getInt("id_category");
                 int idUser = resultSet.getInt("id_user");
@@ -93,7 +94,7 @@ public class RecipeSell {
                 LocalDate sellDate = resultSet.getDate("sell_date").toLocalDate();
 
                 recipeSells.add(
-                        new RecipeSell(id, idRecipe, idCategory, idUser, combien, argent, reste, sellDate));
+                        new RecipeSell(id, idVendeur, idRecipe, idCategory, idUser, combien, argent, reste, sellDate));
             }
         } catch (Exception e) {
             throw e;
@@ -125,7 +126,7 @@ public class RecipeSell {
             resultSet = statement.executeQuery();
 
             while (resultSet.next()) {
-                id = resultSet.getInt("id_recipe");
+                id = resultSet.getInt("id_recipe_sell");
                 idRecipe = resultSet.getInt("id_recipe");
                 idVendeur = resultSet.getInt("id_vendeur");
                 idCategory = resultSet.getInt("id_category");
@@ -323,6 +324,7 @@ public class RecipeSell {
 
             while (resultSet.next()) {
                 int id = resultSet.getInt("id_recipe_sell");
+                int idVendeur = resultSet.getInt("id_vendeur");
                 int idRecipe = resultSet.getInt("id_recipe");
                 int idCategory = resultSet.getInt("id_category");
                 int idUser = resultSet.getInt("id_user");
@@ -340,7 +342,7 @@ public class RecipeSell {
                 ", reste=" + reste + 
                 ", sellDate=" + sellDate);
 
-                recipeSells.add(new RecipeSell(id, idRecipe, idCategory, idUser, combien, argent, reste, sellDate));
+                recipeSells.add(new RecipeSell(id, idVendeur, idRecipe, idCategory, idUser, combien, argent, reste, sellDate));
             }
         } catch (Exception e) {
             throw e;
