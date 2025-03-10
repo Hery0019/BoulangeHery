@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import dao.EntityInUseException;
 import dao.Category;
 
 public class CategoryServlet extends HttpServlet {
@@ -21,7 +22,11 @@ public class CategoryServlet extends HttpServlet {
             if (action != null && action.equals("delete")) {
                 int id = Integer.parseInt(req.getParameter("id"));
                 Category category = new Category(id);
-                category.delete();
+                try {
+                    category.delete();
+                } catch (EntityInUseException e) {
+                    req.setAttribute("errorMessage", e.getMessage());
+                }
             }
 
             ArrayList<Category> categories = Category.all();

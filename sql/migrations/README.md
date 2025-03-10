@@ -9,3 +9,4 @@
 | N° | Objet |
 |----|-------|
 | 001 | Trigger commission : règle en vigueur à la date de vente |
+| 002 | Politiques ON DELETE (CASCADE composants de recette, RESTRICT ailleurs) |

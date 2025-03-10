@@ -429,30 +429,22 @@ public class Recipe {
         Connection connection = null;
         PreparedStatement statement = null;
         try {
-            // Delete all the recipe's ingredient before deleting
-            // the recipe itself
-            RecipeIngredient recipeIngredient = new RecipeIngredient(id);
-            recipeIngredient.deleteFromIdRecipe();
-
-            // Delete all the recipe's review
-            Review review = new Review();
-            review.setIdRecipe(id);
-            review.deleteFromIdRecipe();
-
             connection = DBConnection.getPostgesConnection();
             connection.setAutoCommit(false);
-            statement = connection.prepareStatement(
-                    "DELETE FROM recipe"
-                            + " WHERE id_recipe = ?");
+            // Ingrédients, étapes, avis, stock et historique des prix suivent par ON DELETE CASCADE ; ventes et commissions bloquent (RESTRICT).
+            statement = connection.prepareStatement("DELETE FROM recipe WHERE id_recipe = ?");
             statement.setInt(1, id);
             statement.executeUpdate();
             connection.commit();
         } catch (Exception e) {
-            connection.rollback();
+            if (connection != null) connection.rollback();
+            if (EntityInUseException.isForeignKeyViolation(e)) {
+                throw new EntityInUseException("Cette recette a des ventes ou des commissions enregistrées : elle ne peut pas être supprimée.");
+            }
             throw e;
         } finally {
-            statement.close();
-            connection.close();
+            if (statement != null) statement.close();
+            if (connection != null) connection.close();
         }
     }
 

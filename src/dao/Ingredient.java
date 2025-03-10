@@ -247,19 +247,19 @@ public class Ingredient {
         try {
             connection = DBConnection.getPostgesConnection();
             connection.setAutoCommit(false);
-            statement = connection.prepareStatement(
-                "DELETE FROM ingredient"
-                + " WHERE id_ingredient = ?"
-            );
+            statement = connection.prepareStatement("DELETE FROM ingredient WHERE id_ingredient = ?");
             statement.setInt(1, id);
             statement.executeUpdate();
             connection.commit();
         } catch (Exception e) {
-            connection.rollback();
+            if (connection != null) connection.rollback();
+            if (EntityInUseException.isForeignKeyViolation(e)) {
+                throw new EntityInUseException("Cet ingrédient est encore associé à une ou plusieurs recette(s) : il ne peut pas être supprimé.");
+            }
             throw e;
         } finally {
-            statement.close();
-            connection.close();
+            if (statement != null) statement.close();
+            if (connection != null) connection.close();
         }
     }
 

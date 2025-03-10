@@ -190,28 +190,22 @@ public class Perfume {
     public void delete() throws Exception {
         Connection connection = null;
         PreparedStatement statement = null;
-
         try {
             connection = DBConnection.getPostgesConnection();
             connection.setAutoCommit(false);
-            statement = connection.prepareStatement(
-                "DELETE FROM perfume WHERE id_perfume = ?"
-            );
+            statement = connection.prepareStatement("DELETE FROM perfume WHERE id_perfume = ?");
             statement.setInt(1, id);
             statement.executeUpdate();
             connection.commit();
         } catch (Exception e) {
-            if (connection != null) {
-                connection.rollback();
+            if (connection != null) connection.rollback();
+            if (EntityInUseException.isForeignKeyViolation(e)) {
+                throw new EntityInUseException("Ce parfum est utilisé par des recettes : il ne peut pas être supprimé.");
             }
             throw e;
         } finally {
-            if (statement != null) {
-                statement.close();
-            }
-            if (connection != null) {
-                connection.close();
-            }
+            if (statement != null) statement.close();
+            if (connection != null) connection.close();
         }
     }
 

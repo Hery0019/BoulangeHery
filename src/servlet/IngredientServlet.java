@@ -3,6 +3,7 @@ package servlet;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import dao.EntityInUseException;
 import dao.RecipeIngredient;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
@@ -28,7 +29,11 @@ public class IngredientServlet extends HttpServlet {
                     req.setAttribute("errorMessage", "Cet ingrédient est encore associé à une ou plusieurs recette(s)");
                 } else {
                     Ingredient ingredient = new Ingredient(idIngredient);
-                    ingredient.delete();
+                    try {
+                        ingredient.delete();
+                    } catch (EntityInUseException e) {
+                        req.setAttribute("errorMessage", e.getMessage());
+                    }
                 }
             }
 

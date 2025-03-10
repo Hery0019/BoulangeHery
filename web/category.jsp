@@ -45,6 +45,14 @@
                     <!-- Basic Bootstrap Table -->
                     <div class="card">
                         <h5 class="card-header">Liste des catégories</h5>
+                        <% if (request.getAttribute("errorMessage") != null) { %>
+                        <div class="card-body pb-0">
+                            <div class="alert alert-danger alert-dismissible mb-0" role="alert">
+                                <%= request.getAttribute("errorMessage") %>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        </div>
+                        <% } %>
                         <% if (connected) { %>
                         <div class="card-body"><a href="form-category" type="button" class="btn btn-success">Ajouter</a>
                         </div>

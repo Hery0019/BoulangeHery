@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import dao.EntityInUseException;
 import dao.Category;
 import dao.Recipe;
 import dao.Ingredient;
@@ -26,7 +27,11 @@ public class RecipeServlet extends HttpServlet {
             if (action != null && action.equals("delete")) {
                 int id = Integer.parseInt(req.getParameter("id"));
                 Recipe recipe = new Recipe(id);
-                recipe.delete();
+                try {
+                    recipe.delete();
+                } catch (EntityInUseException e) {
+                    req.setAttribute("errorMessage", e.getMessage());
+                }
             }
 
             ArrayList<Category> categories = Category.all();
