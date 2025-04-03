@@ -61,15 +61,11 @@ public class RecipeServlet extends HttpServlet {
             LocalDate maxCreationDate = null;
 
             
-            String minPriceStr = req.getParameter("searchMinPrice") == null ? "1"
-            : req.getParameter("searchMinPrice");
-
-            String maxPriceStr = req.getParameter("searchMaxPrice") == null ? "100000000"
-            : req.getParameter("searchMaxPrice");
-            
-
-            double minPrice = Double.parseDouble(minPriceStr);
-            double maxPrice = Double.parseDouble(maxPriceStr);
+            // 0 = critère non renseigné (même convention que Recipe.search)
+            String minPriceStr = req.getParameter("searchMinPrice");
+            String maxPriceStr = req.getParameter("searchMaxPrice");
+            double minPrice = minPriceStr == null || minPriceStr.isBlank() ? 0.0 : Double.parseDouble(minPriceStr);
+            double maxPrice = maxPriceStr == null || maxPriceStr.isBlank() ? 0.0 : Double.parseDouble(maxPriceStr);
 
             if (minCookTimeStr != null && !minCookTimeStr.equals("")) {
                 minCookTime = LocalTime.parse(minCookTimeStr);

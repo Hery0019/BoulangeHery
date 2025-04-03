@@ -379,11 +379,11 @@ public class Recipe {
                 statement.setDate(paramIndex++, Date.valueOf(maxCreationDate));
             }
 
-            if (minPrice >= 0) {
+            if (minPrice != 0.0) {
                 statement.setDouble(paramIndex++, minPrice);
             }
 
-            if (maxPrice >= 0) {
+            if (maxPrice != 0.0) {
                 statement.setDouble(paramIndex++, maxPrice);
             }
 

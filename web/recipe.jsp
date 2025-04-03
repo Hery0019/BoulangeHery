@@ -172,15 +172,14 @@
                                             <div class="col mb-0">
                                                 <label class="form-label" for="search-min-price">Prix minimum</label>
                                                 <input name="searchMinPrice" type="number" class="form-control"
-                                                       id="search-min-price" placeholder="Prix de minimum" value="1"
+                                                       id="search-min-price" placeholder="Prix de minimum"
                                                        aria-label="Prix de minimum"
                                                        aria-describedby="search-min-price"/>
                                             </div>
                                             <div class="col mb-0">
                                                 <label class="form-label" for="search-max-price">Prix maximum</label>
                                                 <input name="searchMaxPrice" type="number" class="form-control"
-                                                    value="500000"
-                                                       id="search-max-price" placeholder="Prix de maximum" 
+                                                    id="search-max-price" placeholder="Prix de maximum" 
                                                        aria-label="Prix de maximum"
                                                        aria-describedby="search-max-price">
                                             </div>
