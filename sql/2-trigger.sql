@@ -110,19 +110,12 @@ EXECUTE FUNCTION calculate_commission();
 
 
 
--- Création de la fonction associée au trigger
+-- Historique des prix : une ligne par changement de prix, datée du jour du changement
 CREATE OR REPLACE FUNCTION log_price_change()
 RETURNS TRIGGER AS $$
 BEGIN
-    -- Insère les données dans recipe_price_history
     INSERT INTO recipe_price_history (id_recipe, price_before, price_after, change_date)
-    VALUES (
-        OLD.id_recipe,        -- L'ancien ID de recette
-        OLD.price,            -- L'ancien prix (avant l'update)
-        NEW.price,            -- Le nouveau prix (après l'update)
-        NEW.created_date      -- La nouvelle date créée après l'update
-    );
-
+    VALUES (NEW.id_recipe, OLD.price, NEW.price, CURRENT_DATE);
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;

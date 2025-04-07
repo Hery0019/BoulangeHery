@@ -258,19 +258,19 @@ public class Recipe {
         try {
             connection = DBConnection.getPostgesConnection();
             connection.setAutoCommit(false);
+            // cook_time n'est pas modifiable ici : il est recalculé par trigger depuis les étapes.
             statement = connection.prepareStatement(
                     "UPDATE recipe"
-                            + " SET title = ?, recipe_description = ?, id_category = ?, id_perfume = ?, cook_time = ?, created_by = ?, created_date = ?, price = ? "
+                            + " SET title = ?, recipe_description = ?, id_category = ?, id_perfume = ?, created_by = ?, created_date = ?, price = ? "
                             + " WHERE id_recipe = ?");
             statement.setString(1, title);
             statement.setString(2, description);
             statement.setInt(3, idCategory);
             statement.setInt(4, idPerfume);
-            statement.setTime(5, Time.valueOf(cookTime));
-            statement.setString(6, createdBy);
-            statement.setDate(7, Date.valueOf(createdDate));
-            statement.setDouble(8, price);
-            statement.setInt(9, id);
+            statement.setString(5, createdBy);
+            statement.setDate(6, Date.valueOf(createdDate));
+            statement.setDouble(7, price);
+            statement.setInt(8, id);
             statement.executeUpdate();
             connection.commit();
         } catch (Exception e) {

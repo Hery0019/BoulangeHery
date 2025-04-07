@@ -118,6 +118,7 @@
                                             <input value="<%= recipe.getFormattedCookTime() %>" name="recipeCookTime"
                                                    class="form-control" type="time" id="recipeCookTime"
                                                    min="00:01"
+                                                   <% if ("update".equals(request.getAttribute("action"))) { %>readonly title="Calculé automatiquement à partir des étapes"<% } %>
                                                    required
                                             >
                                         </div> 
