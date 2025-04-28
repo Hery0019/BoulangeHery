@@ -8,7 +8,7 @@ CREATE TABLE gotta_taste_user (
     firstname VARCHAR(100) NOT NULL,
     lastname VARCHAR(100) NOT NULL,
     email VARCHAR(100) NOT NULL,
-    user_password VARCHAR(100) NOT NULL
+    user_password VARCHAR(255) NOT NULL -- empreinte PBKDF2 (util.PasswordHasher), jamais en clair
 );
 
 CREATE TABLE category (

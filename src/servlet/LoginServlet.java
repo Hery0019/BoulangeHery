@@ -9,31 +9,29 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import dao.User;
 import util.Params;
+import util.SessionUtils;
 
 public class LoginServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        req.getSession().removeAttribute("user");
+        req.getSession().removeAttribute(SessionUtils.USER_ATTRIBUTE);
         resp.sendRedirect("recipe");
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException {
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String email = Params.requiredString(req, "userEmail");
         String password = Params.requiredString(req, "userPassword");
-        User user = new User(email, password);
         try {
-            user.findByEmailAndPassword();
-            if (user.getId() != 0) {
-                req.getSession().setAttribute("user", user);
+            User user = User.authenticate(email, password);
+            if (user != null) {
+                req.getSession().setAttribute(SessionUtils.USER_ATTRIBUTE, user);
                 resp.sendRedirect("recipe");
             } else {
-                resp.sendRedirect("form-login.jsp?error=true");
+                resp.sendRedirect("form-login?error=true");
             }
-        } catch (
-
-        Exception e) {
+        } catch (Exception e) {
             throw new ServletException(e);
         }
     }

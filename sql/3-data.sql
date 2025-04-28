@@ -7,9 +7,9 @@ INSERT INTO category (category_name) VALUES
 
 -- Inserer des utilisateurs fictifs
 INSERT INTO gotta_taste_user (firstname, lastname, email, user_password) VALUES  
-    ('Marie', 'Boulanger', 'marie.boulanger@example.com', 'pain123'),
-    ('Paul', 'Patissier', 'paul.patissier@example.com', 'croissant456'),
-    ('Hery', 'RAKOTONARIVO', 'herakotonarivo@gmail.com', '123');
+    ('Marie', 'Boulanger', 'marie.boulanger@example.com', 'pbkdf2$210000$OTycqrpaVK0zPG6HrDJvww==$NjP2Vt2WuRER8udXYKsCCVFWU91SKb+j5z7Vgl0s7bo='),
+    ('Paul', 'Patissier', 'paul.patissier@example.com', 'pbkdf2$210000$87B9rbI1RcCnFICkzeuHIg==$QX7Wv9FXjMuOT7EwW2cSJ127oX3M0MP9+zUo80C5x7E='),
+    ('Hery', 'RAKOTONARIVO', 'herakotonarivo@gmail.com', 'pbkdf2$210000$jMvB6/FK+B7c2pfgIUCTuQ==$O7nPU0JA/m7xMORgkBW6+Cu0gm4Np32C1g2B0nUfYPY=');
 
 -- Inserer des parfums
 INSERT INTO perfume (perfume_name) VALUES

@@ -1,202 +1,101 @@
 package dao;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
 
+import util.PasswordHasher;
+
+/**
+ * Compte utilisateur (gotta_taste_user). L'objet ne porte jamais le mot de
+ * passe : il est haché à la création et vérifié uniquement dans
+ * {@link #authenticate(String, String)}.
+ */
 public class User {
 
     private int id;
     private String firstname;
     private String lastname;
     private String email;
-    private String password;
-    private String hashedPassword;
 
-    public User(String email, String password) {
-        this.email = email;
-        setPassword(password);
-    }
-
-    public User(String firstname, String lastname, String email, String password) {
-        this.firstname = firstname;
-        this.lastname = lastname;
-        this.email = email;
-        setPassword(password);
-    }
-
-    public User(int id, String firstname, String lastname, String email, String password) {
+    public User(int id, String firstname, String lastname, String email) {
         this.id = id;
         this.firstname = firstname;
         this.lastname = lastname;
         this.email = email;
-        setPassword(password);
     }
 
     public static ArrayList<User> all() throws Exception {
-        ArrayList<User> users = new ArrayList<User>();
-
-        Connection connection = null;
-        PreparedStatement statement = null;
-        ResultSet resultSet = null;
-
-        try {
-            connection = DBConnection.getPostgesConnection();
-            statement = connection.prepareStatement(
-                "SELECT * FROM gotta_taste_user"
-            );
-            resultSet = statement.executeQuery();
-
-            int id;
-            String firstname;
-            String lastname;
-            String email;
-            String password;
+        ArrayList<User> users = new ArrayList<>();
+        try (Connection connection = DBConnection.getPostgesConnection();
+                PreparedStatement statement = connection.prepareStatement(
+                        "SELECT id_user, firstname, lastname, email FROM gotta_taste_user ORDER BY id_user");
+                ResultSet resultSet = statement.executeQuery()) {
             while (resultSet.next()) {
-                id = resultSet.getInt("id_user");
-                firstname = resultSet.getString("firstname");
-                lastname = resultSet.getString("lastname");
-                email = resultSet.getString("email");
-                password = resultSet.getString("user_password");
-
-                users.add(
-                    new User(id, firstname, lastname, email, password)
-                );
-            }
-        } catch (Exception e) {
-            throw e;
-        } finally {
-            if (resultSet != null) {
-                resultSet.close();
-            }
-            if (statement != null) {
-                statement.close();
-            }
-            if (connection != null) {
-                connection.close();
+                users.add(fromRow(resultSet));
             }
         }
-
         return users;
     }
 
     public static User findById(int id) throws Exception {
-        Connection connection = null;
-        PreparedStatement statement = null;
-        ResultSet resultSet = null;
-    
-        try {
-            connection = DBConnection.getPostgesConnection();
-            statement = connection.prepareStatement(
-                    "SELECT * FROM gotta_taste_user WHERE id_user = ?");
+        try (Connection connection = DBConnection.getPostgesConnection();
+                PreparedStatement statement = connection.prepareStatement(
+                        "SELECT id_user, firstname, lastname, email FROM gotta_taste_user WHERE id_user = ?")) {
             statement.setInt(1, id);
-            resultSet = statement.executeQuery();
-    
-            if (resultSet.next()) {
-                String firstname = resultSet.getString("firstname");
-                String lastname = resultSet.getString("lastname");
-                String email = resultSet.getString("email");
-                String password = resultSet.getString("user_password");
-    
-                return new User(id, firstname, lastname, email, password);
-            }
-        } catch (Exception e) {
-            throw e;
-        } finally {
-            if (resultSet != null) {
-                resultSet.close();
-            }
-            if (statement != null) {
-                statement.close();
-            }
-            if (connection != null) {
-                connection.close();
-            }
-        }
-    
-        return null; // Retourne null si aucun utilisateur n'a été trouvé
-    }
-    
-
-    public void create() throws Exception {
-        Connection connection = null;
-        PreparedStatement statement = null;
-        try {
-            connection = DBConnection.getPostgesConnection();
-            connection.setAutoCommit(false);
-            statement = connection.prepareStatement(
-                "INSERT INTO gotta_taste_user(firstname, lastname, email, user_password)"
-                + " VALUES (?, ?, ?, ?)"
-            );
-            statement.setString(1, this.firstname);
-            statement.setString(2, this.lastname);
-            statement.setString(3, this.email);
-            statement.setString(4, this.password);
-            statement.execute();
-            connection.commit();
-        } catch (Exception e) {
-            connection.rollback();
-            throw e;
-        } finally {
-            statement.close();
-            connection.close();
-        }
-    }
-
-    public void findByEmailAndPassword() throws Exception {
-        Connection connection = null;
-        PreparedStatement statement = null;
-        ResultSet resultSet = null;
-
-        try {
-            connection = DBConnection.getPostgesConnection();
-            statement = connection.prepareStatement(
-                "SELECT * FROM gotta_taste_user"
-                + " WHERE email = ? AND user_password = ?"
-            );
-            statement.setString(1, this.email);
-            statement.setString(2, this.password);
-            resultSet = statement.executeQuery();
-
-            while (resultSet.next()) {
-                id = resultSet.getInt("id_user");
-                firstname = resultSet.getString("firstname");
-                lastname = resultSet.getString("lastname");
-            }
-        } catch (Exception e) {
-            throw e;
-        } finally {
-            if (resultSet != null) {
-                resultSet.close();
-            }
-            if (statement != null) {
-                statement.close();
-            }
-            if (connection != null) {
-                connection.close();
+            try (ResultSet resultSet = statement.executeQuery()) {
+                return resultSet.next() ? fromRow(resultSet) : null;
             }
         }
     }
 
-    private String hashPassword(String password) {
-        MessageDigest md = null;
-        byte[] hash = null;
-
-        try {
-            md = MessageDigest.getInstance("SHA-256");
-            hash = md.digest(password.getBytes());
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+    /**
+     * Renvoie l'utilisateur si l'email existe et que le mot de passe correspond
+     * à l'empreinte stockée, sinon {@code null}. Un mot de passe stocké en
+     * clair (base non migrée) ne permet jamais de se connecter.
+     */
+    public static User authenticate(String email, String password) throws Exception {
+        try (Connection connection = DBConnection.getPostgesConnection();
+                PreparedStatement statement = connection.prepareStatement(
+                        "SELECT id_user, firstname, lastname, email, user_password FROM gotta_taste_user WHERE email = ?")) {
+            statement.setString(1, email);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    if (PasswordHasher.verify(password, resultSet.getString("user_password"))) {
+                        return fromRow(resultSet);
+                    }
+                }
+            }
         }
+        return null;
+    }
 
-        StringBuilder sb = new StringBuilder();
-        for (byte b : hash) {
-            sb.append(String.format("%02x", b));
+    /** Crée le compte avec le mot de passe haché et renvoie son identifiant. */
+    public static int create(String firstname, String lastname, String email, String password) throws Exception {
+        try (Connection connection = DBConnection.getPostgesConnection();
+                PreparedStatement statement = connection.prepareStatement(
+                        "INSERT INTO gotta_taste_user(firstname, lastname, email, user_password) VALUES (?, ?, ?, ?)",
+                        Statement.RETURN_GENERATED_KEYS)) {
+            statement.setString(1, firstname);
+            statement.setString(2, lastname);
+            statement.setString(3, email);
+            statement.setString(4, PasswordHasher.hash(password));
+            statement.executeUpdate();
+            try (ResultSet keys = statement.getGeneratedKeys()) {
+                keys.next();
+                return keys.getInt(1);
+            }
         }
-        return sb.toString();
+    }
+
+    private static User fromRow(ResultSet resultSet) throws Exception {
+        return new User(
+                resultSet.getInt("id_user"),
+                resultSet.getString("firstname"),
+                resultSet.getString("lastname"),
+                resultSet.getString("email"));
     }
 
     public int getId() {
@@ -235,23 +134,9 @@ public class User {
         this.email = email;
     }
 
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-        this.hashedPassword = hashPassword(password);
-    }
-
-    public String getHashedPassword() {
-        return hashedPassword;
-    }
-
     @Override
     public String toString() {
-        return "User [id=" + id + ", firstname=" + this.firstname + ", lastname=" + this.lastname + ", email=" + this.email
-                + ", password=" + this.password + ", hashedPassword=" + this.hashedPassword + "]";
+        return "User [id=" + id + ", firstname=" + firstname + ", lastname=" + lastname + ", email=" + email + "]";
     }
 
 }
