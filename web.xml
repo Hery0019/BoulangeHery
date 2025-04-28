@@ -28,6 +28,16 @@
   </description>
 
 
+  <!-- Journalise les exceptions non gérées et renvoie 400/500 sans pile d'appels (voir servlet.ErrorFilter) -->
+  <filter>
+    <filter-name>ErrorFilter</filter-name>
+    <filter-class>servlet.ErrorFilter</filter-class>
+  </filter>
+  <filter-mapping>
+    <filter-name>ErrorFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
   <!-- Contrôle d'accès : tout est protégé sauf la consultation publique (voir servlet.AuthFilter) -->
   <filter>
     <filter-name>AuthFilter</filter-name>
@@ -231,5 +241,27 @@
     <servlet-name>RecipePriceHistoryServlet</servlet-name>
     <url-pattern>/recipe-price-history</url-pattern>
   </servlet-mapping>
+
+  <!-- Pages d'erreur neutres (aucune pile d'appels ni requête SQL exposée) -->
+  <error-page>
+    <error-code>400</error-code>
+    <location>/error.jsp</location>
+  </error-page>
+  <error-page>
+    <error-code>403</error-code>
+    <location>/error.jsp</location>
+  </error-page>
+  <error-page>
+    <error-code>404</error-code>
+    <location>/error.jsp</location>
+  </error-page>
+  <error-page>
+    <error-code>500</error-code>
+    <location>/error.jsp</location>
+  </error-page>
+  <error-page>
+    <exception-type>java.lang.Throwable</exception-type>
+    <location>/error.jsp</location>
+  </error-page>
 
 </web-app>

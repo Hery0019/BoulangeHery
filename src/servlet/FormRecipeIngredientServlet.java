@@ -8,6 +8,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import util.Params;
 import util.SessionUtils;
 
 import java.io.IOException;
@@ -24,8 +25,8 @@ public class FormRecipeIngredientServlet extends HttpServlet {
 
         try {
             String action = req.getParameter("action");
-            int idRecipe = req.getParameter("idRecipe") == null ? 0 : Integer.parseInt(req.getParameter("idRecipe"));
-            int idIngredient = req.getParameter("idIngredient") == null ? 0 : Integer.parseInt(req.getParameter("idIngredient"));
+            int idRecipe = Params.requiredInt(req, "idRecipe");
+            int idIngredient = Params.intValue(req, "idIngredient", 0);
 
             RecipeIngredient recipeIngredient = new RecipeIngredient(idRecipe, idIngredient);
             recipeIngredient.find();

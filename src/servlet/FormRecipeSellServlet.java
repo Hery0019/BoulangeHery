@@ -8,7 +8,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.lang.reflect.Array;
 
 import dao.Category;
 import dao.Perfume;
@@ -16,6 +15,7 @@ import dao.Recipe;
 import dao.Vendeur;
 import dao.User;
 import dao.RecipeSell;
+import util.Params;
 import util.SessionUtils;
 
 public class FormRecipeSellServlet extends HttpServlet {
@@ -49,7 +49,7 @@ public class FormRecipeSellServlet extends HttpServlet {
         }
 
         if (action != null && action.equals("update")) {
-            int id = Integer.parseInt(req.getParameter("id"));
+            int id = Params.requiredInt(req, "id");
             recipeSell.setId(id);
             try {
                 recipeSell.find();

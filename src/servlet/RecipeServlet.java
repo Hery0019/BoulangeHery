@@ -11,11 +11,12 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import dao.EntityInUseException;
 import dao.Category;
-import dao.Recipe;
+import dao.EntityInUseException;
 import dao.Ingredient;
 import dao.Perfume;
+import dao.Recipe;
+import util.Params;
 
 public class RecipeServlet extends HttpServlet {
 
@@ -24,9 +25,8 @@ public class RecipeServlet extends HttpServlet {
         try {
             String action = req.getParameter("action");
 
-            if (action != null && action.equals("delete")) {
-                int id = Integer.parseInt(req.getParameter("id"));
-                Recipe recipe = new Recipe(id);
+            if ("delete".equals(action)) {
+                Recipe recipe = new Recipe(Params.requiredInt(req, "id"));
                 try {
                     recipe.delete();
                 } catch (EntityInUseException e) {
@@ -38,53 +38,22 @@ public class RecipeServlet extends HttpServlet {
             ArrayList<Perfume> perfumes = Perfume.all();
             ArrayList<Ingredient> ingredients = Ingredient.all();
 
-            String title = req.getParameter("searchTitle") == null ? "" : req.getParameter("searchTitle");
-            String description = req.getParameter("searchDescription") == null ? ""
-                    : req.getParameter("searchDescription");
-            int idCategory = req.getParameter("searchIdCategory") == null ? 0
-                    : Integer.parseInt(req.getParameter("searchIdCategory"));
-
-            int idPerfume = req.getParameter("searchIdPerfume") == null ? 0
-                    : Integer.parseInt(req.getParameter("searchIdPerfume"));
-
-
+            String title = Params.string(req, "searchTitle", "");
+            String description = Params.string(req, "searchDescription", "");
+            int idCategory = Params.intValue(req, "searchIdCategory", 0);
+            int idPerfume = Params.intValue(req, "searchIdPerfume", 0);
             String[] selectedIdsIngredient = req.getParameterValues("idIngredients");
-
-            String minCookTimeStr = req.getParameter("searchMinCookTime");
-            String maxCookTimeStr = req.getParameter("searchMaxCookTime");
-            LocalTime minCookTime = null;
-            LocalTime maxCookTime = null;
-            String creator = req.getParameter("searchCreator") == null ? "" : req.getParameter("searchCreator");
-            String minCreationDateStr = req.getParameter("searchMinCreationDate");
-            String maxCreationDateStr = req.getParameter("searchMaxCreationDate");
-            LocalDate minCreationDate = null;
-            LocalDate maxCreationDate = null;
-
-            
+            LocalTime minCookTime = Params.time(req, "searchMinCookTime");
+            LocalTime maxCookTime = Params.time(req, "searchMaxCookTime");
+            String creator = Params.string(req, "searchCreator", "");
+            LocalDate minCreationDate = Params.date(req, "searchMinCreationDate");
+            LocalDate maxCreationDate = Params.date(req, "searchMaxCreationDate");
             // 0 = critère non renseigné (même convention que Recipe.search)
-            String minPriceStr = req.getParameter("searchMinPrice");
-            String maxPriceStr = req.getParameter("searchMaxPrice");
-            double minPrice = minPriceStr == null || minPriceStr.isBlank() ? 0.0 : Double.parseDouble(minPriceStr);
-            double maxPrice = maxPriceStr == null || maxPriceStr.isBlank() ? 0.0 : Double.parseDouble(maxPriceStr);
+            double minPrice = Params.doubleValue(req, "searchMinPrice", 0.0);
+            double maxPrice = Params.doubleValue(req, "searchMaxPrice", 0.0);
 
-            if (minCookTimeStr != null && !minCookTimeStr.equals("")) {
-                minCookTime = LocalTime.parse(minCookTimeStr);
-            }
-
-            if (maxCookTimeStr != null && !maxCookTimeStr.equals("")) {
-                maxCookTime = LocalTime.parse(maxCookTimeStr);
-            }
-
-            if (minCreationDateStr != null && !minCreationDateStr.equals("")) {
-                minCreationDate = LocalDate.parse(minCreationDateStr);
-            }
-
-            if (maxCreationDateStr != null && !maxCreationDateStr.equals("")) {
-                maxCreationDate = LocalDate.parse(maxCreationDateStr);
-            }
-
-            ArrayList<Recipe> recipes = Recipe.search(title, description, idCategory, idPerfume, minCookTime, maxCookTime, creator,
-                    minCreationDate, maxCreationDate, selectedIdsIngredient, minPrice, maxPrice);
+            ArrayList<Recipe> recipes = Recipe.search(title, description, idCategory, idPerfume, minCookTime,
+                    maxCookTime, creator, minCreationDate, maxCreationDate, selectedIdsIngredient, minPrice, maxPrice);
             req.setAttribute("recipes", recipes);
             req.setAttribute("categories", categories);
             req.setAttribute("ingredients", ingredients);
@@ -102,19 +71,20 @@ public class RecipeServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
         String action = req.getParameter("action");
-        int id = Integer.parseInt(req.getParameter("idRecipe"));
-        String title = req.getParameter("recipeTitle");
-        String description = req.getParameter("recipeDescription");
-        int idCategory = Integer.parseInt(req.getParameter("recipeIdCategory"));
-        int idPerfume = Integer.parseInt(req.getParameter("recipeIdPerfume"));
-        LocalTime cookTime = LocalTime.parse(req.getParameter("recipeCookTime"));
-        String createdBy = req.getParameter("recipeCreator");
-        double price = Double.parseDouble(req.getParameter("recipePrice"));
-        LocalDate createdDate = LocalDate.parse(req.getParameter("recipeCreationDate"));
-        Recipe recipe = new Recipe(id, title, description, idCategory, idPerfume, cookTime, createdBy, createdDate, price);
+        int id = Params.intValue(req, "idRecipe", 0);
+        String title = Params.requiredString(req, "recipeTitle");
+        String description = Params.string(req, "recipeDescription", "");
+        int idCategory = Params.requiredInt(req, "recipeIdCategory");
+        int idPerfume = Params.requiredInt(req, "recipeIdPerfume");
+        LocalTime cookTime = Params.requiredTime(req, "recipeCookTime");
+        String createdBy = Params.requiredString(req, "recipeCreator");
+        double price = Params.requiredDouble(req, "recipePrice");
+        LocalDate createdDate = Params.requiredDate(req, "recipeCreationDate");
+        Recipe recipe = new Recipe(id, title, description, idCategory, idPerfume, cookTime, createdBy, createdDate,
+                price);
 
         try {
-            if (action != null && action.equals("update")) {
+            if ("update".equals(action)) {
                 recipe.update();
             } else {
                 recipe.create();

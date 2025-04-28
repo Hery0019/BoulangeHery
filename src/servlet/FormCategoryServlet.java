@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import dao.Category;
+import util.Params;
 import util.SessionUtils;
 
 public class FormCategoryServlet extends HttpServlet {
@@ -23,7 +24,7 @@ public class FormCategoryServlet extends HttpServlet {
         Category category = new Category();
 
         if (action != null && action.equals("update")) {
-            int id = Integer.parseInt(req.getParameter("id"));
+            int id = Params.requiredInt(req, "id");
             category.setId(id);
             try {
                 category.find();

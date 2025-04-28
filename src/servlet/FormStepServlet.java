@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import dao.Recipe;
 import dao.Step;
+import util.Params;
 import util.SessionUtils;
 
 public class FormStepServlet extends HttpServlet {
@@ -24,7 +25,7 @@ public class FormStepServlet extends HttpServlet {
 
         String action = req.getParameter("action");
         ArrayList<Recipe> recipes;
-        int idRecipe = req.getParameter("idRecipe") == null ? 0 : Integer.parseInt(req.getParameter("idRecipe"));
+        int idRecipe = Params.intValue(req, "idRecipe", 0);
         Step step = new Step();
         step.setIdRecipe(idRecipe);
 
@@ -35,7 +36,7 @@ public class FormStepServlet extends HttpServlet {
         }
 
         if (action != null && action.equals("update")) {
-            int id = Integer.parseInt(req.getParameter("id"));
+            int id = Params.requiredInt(req, "id");
             step.setId(id);
             try {
                 step.find();

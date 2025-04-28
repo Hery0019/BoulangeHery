@@ -1,19 +1,15 @@
 package servlet;
 
-import dao.Category;
-import dao.Recipe;
-import dao.RecipeIngredient;
-import dao.Step;
+import java.io.IOException;
+
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import java.io.IOException;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.ArrayList;
+import dao.RecipeIngredient;
+import util.Params;
 
 public class RecipeIngredientServlet extends HttpServlet {
 
@@ -21,10 +17,10 @@ public class RecipeIngredientServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
             String action = req.getParameter("action");
-            int idRecipe = Integer.parseInt(req.getParameter("idRecipe"));
+            int idRecipe = Params.requiredInt(req, "idRecipe");
 
-            if (action != null && action.equals("delete")) {
-                int idIngredient = Integer.parseInt(req.getParameter("idIngredient"));
+            if ("delete".equals(action)) {
+                int idIngredient = Params.requiredInt(req, "idIngredient");
                 RecipeIngredient recipeIngredient = new RecipeIngredient(idRecipe, idIngredient);
                 recipeIngredient.delete();
             }
@@ -38,9 +34,9 @@ public class RecipeIngredientServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String action = req.getParameter("action");
-        int idRecipe = Integer.parseInt(req.getParameter("idRecipe"));
-        int idIngredient = Integer.parseInt(req.getParameter("idIngredient"));
-        double quantity = Double.parseDouble(req.getParameter("quantity"));
+        int idRecipe = Params.requiredInt(req, "idRecipe");
+        int idIngredient = Params.requiredInt(req, "idIngredient");
+        double quantity = Params.requiredDouble(req, "quantity");
 
         RecipeIngredient recipeIngredient = new RecipeIngredient(idRecipe, idIngredient, quantity);
 
@@ -48,8 +44,9 @@ public class RecipeIngredientServlet extends HttpServlet {
             if ("update".equals(action)) {
                 recipeIngredient.update();
             } else if (recipeIngredient.find()) {
-                RequestDispatcher dispatcher = req.getRequestDispatcher("form-recipe-ingredient?idRecipe=" + idRecipe +"&idIngredient=" + idIngredient);
-                req.setAttribute("errorMessage", "La recette contient déjà cette ingrédient");
+                RequestDispatcher dispatcher = req.getRequestDispatcher(
+                        "form-recipe-ingredient?idRecipe=" + idRecipe + "&idIngredient=" + idIngredient);
+                req.setAttribute("errorMessage", "La recette contient déjà cet ingrédient");
                 dispatcher.forward(req, resp);
                 return;
             } else {

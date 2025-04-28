@@ -3,25 +3,26 @@ package servlet;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import dao.EntityInUseException;
-import dao.RecipeIngredient;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import dao.EntityInUseException;
 import dao.Ingredient;
+import dao.RecipeIngredient;
+import util.Params;
 
 public class IngredientServlet extends HttpServlet {
-    
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
             String action = req.getParameter("action");
 
             if ("delete".equals(action)) {
-                int idIngredient = Integer.parseInt(req.getParameter("id"));
+                int idIngredient = Params.requiredInt(req, "id");
                 RecipeIngredient recipeIngredient = new RecipeIngredient();
                 recipeIngredient.setIdIngredient(idIngredient);
 
@@ -37,20 +38,10 @@ public class IngredientServlet extends HttpServlet {
                 }
             }
 
-            String name = req.getParameter("searchName") == null ? "" : req.getParameter("searchName");
-            String unit = req.getParameter("searchUnit") == null ? "" : req.getParameter("searchUnit");
-            String minPriceStr = req.getParameter("searchMinPrice");
-            String maxPriceStr = req.getParameter("searchMaxPrice");
-            int minPrice = 0;
-            int maxPrice = 0;
-
-            if (minPriceStr != null && !minPriceStr.equals("")) {
-                minPrice = Integer.parseInt(minPriceStr);
-            }
-
-            if (maxPriceStr != null && !maxPriceStr.equals("")) {
-                maxPrice = Integer.parseInt(maxPriceStr);
-            }
+            String name = Params.string(req, "searchName", "");
+            String unit = Params.string(req, "searchUnit", "");
+            int minPrice = Params.intValue(req, "searchMinPrice", 0);
+            int maxPrice = Params.intValue(req, "searchMaxPrice", 0);
 
             ArrayList<Ingredient> ingredients = Ingredient.search(name, unit, minPrice, maxPrice);
 
@@ -68,14 +59,14 @@ public class IngredientServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
         String action = req.getParameter("action");
-        int id = Integer.parseInt(req.getParameter("idIngredient"));
-        String name = req.getParameter("ingredientName");
-        String unit = req.getParameter("ingredientUnit");
-        int price = Integer.parseInt(req.getParameter("ingredientPrice"));
+        int id = Params.intValue(req, "idIngredient", 0);
+        String name = Params.requiredString(req, "ingredientName");
+        String unit = Params.requiredString(req, "ingredientUnit");
+        int price = Params.requiredInt(req, "ingredientPrice");
         Ingredient ingredient = new Ingredient(id, name, unit, price);
-        
+
         try {
-            if (action != null && action.equals("update")) {
+            if ("update".equals(action)) {
                 ingredient.update();
             } else {
                 ingredient.create();

@@ -1,40 +1,34 @@
 package servlet;
 
-import dao.Recipe;
-import dao.RecipeIngredient;
-import dao.Step;
+import java.io.IOException;
+import java.time.LocalTime;
+import java.util.ArrayList;
+
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.time.LocalDate;
-import java.time.LocalTime;
+import dao.Recipe;
+import dao.RecipeIngredient;
+import dao.Step;
+import util.Params;
 
 public class RecipeDetailsServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
-            int idRecipe = req.getParameter("idRecipe") == null ? 0 : Integer.parseInt(req.getParameter("idRecipe"));
-            String minCookTimeStr = req.getParameter("searchMinCookTime");
-            String maxCookTimeStr = req.getParameter("searchMaxCookTime");
-            LocalTime minCookTime = null;
-            LocalTime maxCookTime = null;
+            int idRecipe = Params.requiredInt(req, "idRecipe");
+            LocalTime minCookTime = Params.time(req, "searchMinCookTime");
+            LocalTime maxCookTime = Params.time(req, "searchMaxCookTime");
 
-            if (minCookTimeStr != null && !minCookTimeStr.equals("")) {
-                minCookTime = LocalTime.parse(minCookTimeStr);
+            Recipe recipe = Recipe.findById(idRecipe);
+            if (recipe == null) {
+                resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Recette introuvable");
+                return;
             }
-
-            if (maxCookTimeStr != null && !maxCookTimeStr.equals("")) {
-                maxCookTime = LocalTime.parse(maxCookTimeStr);
-            }
-
-            Recipe recipe = new Recipe(idRecipe);
-            recipe.find();
             ArrayList<Step> steps = Step.search(idRecipe, 0, 0, minCookTime, maxCookTime, "");
             ArrayList<RecipeIngredient> recipeIngredients = RecipeIngredient.search(idRecipe);
 

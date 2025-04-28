@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import dao.Recipe;
 import dao.Review;
+import util.Params;
 import util.SessionUtils;
 
 public class FormReviewServlet extends HttpServlet {
@@ -33,7 +34,7 @@ public class FormReviewServlet extends HttpServlet {
         }
 
         if (action != null && action.equals("update")) {
-            int id = Integer.parseInt(req.getParameter("id"));
+            int id = Params.requiredInt(req, "id");
             review.setId(id);
             try {
                 review.find();

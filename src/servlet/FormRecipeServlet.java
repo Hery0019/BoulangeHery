@@ -12,7 +12,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import dao.Category;
 import dao.Perfume;
 import dao.Recipe;
-import java.lang.reflect.Array;
+import util.Params;
 import util.SessionUtils;
 
 public class FormRecipeServlet extends HttpServlet {
@@ -37,7 +37,7 @@ public class FormRecipeServlet extends HttpServlet {
         }
 
         if (action != null && action.equals("update")) {
-            int id = Integer.parseInt(req.getParameter("id"));
+            int id = Params.requiredInt(req, "id");
             recipe.setId(id);
             try {
                 recipe.find();

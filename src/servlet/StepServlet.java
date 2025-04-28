@@ -1,9 +1,8 @@
 package servlet;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
 
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
@@ -13,6 +12,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import dao.Recipe;
 import dao.Step;
+import util.Params;
 
 public class StepServlet extends HttpServlet {
 
@@ -21,43 +21,19 @@ public class StepServlet extends HttpServlet {
         try {
             String action = req.getParameter("action");
 
-            if (action != null && action.equals("delete")) {
-                int id = Integer.parseInt(req.getParameter("id"));
-                Step step = new Step(id);
+            if ("delete".equals(action)) {
+                Step step = new Step(Params.requiredInt(req, "id"));
                 step.delete();
             }
 
             ArrayList<Recipe> recipes = Recipe.all();
 
-            int idRecipe = req.getParameter("searchIdRecipe") == null ? 0
-                    : Integer.parseInt(req.getParameter("searchIdRecipe"));
-            String minStepNumberStr = req.getParameter("searchMinStepNumber");
-            String maxStepNumberStr = req.getParameter("searchMaxStepNumber");
-            String instruction = req.getParameter("searchInstruction") == null ? ""
-                    : req.getParameter("searchInstruction");
-            int minStepNumber = 0;
-            int maxStepNumber = 0;
-
-            if (minStepNumberStr != null && !minStepNumberStr.equals("")) {
-                minStepNumber = Integer.parseInt(minStepNumberStr);
-            }
-
-            if (maxStepNumberStr != null && !maxStepNumberStr.equals("")) {
-                maxStepNumber = Integer.parseInt(maxStepNumberStr);
-            }
-
-            String minCookTimeStr = req.getParameter("searchMinCookTime");
-            String maxCookTimeStr = req.getParameter("searchMaxCookTime");
-            LocalTime minCookTime = null;
-            LocalTime maxCookTime = null;
-
-            if (minCookTimeStr != null && !minCookTimeStr.equals("")) {
-                minCookTime = LocalTime.parse(minCookTimeStr);
-            }
-
-            if (maxCookTimeStr != null && !maxCookTimeStr.equals("")) {
-                maxCookTime = LocalTime.parse(maxCookTimeStr);
-            }
+            int idRecipe = Params.intValue(req, "searchIdRecipe", 0);
+            int minStepNumber = Params.intValue(req, "searchMinStepNumber", 0);
+            int maxStepNumber = Params.intValue(req, "searchMaxStepNumber", 0);
+            String instruction = Params.string(req, "searchInstruction", "");
+            LocalTime minCookTime = Params.time(req, "searchMinCookTime");
+            LocalTime maxCookTime = Params.time(req, "searchMaxCookTime");
 
             ArrayList<Step> steps = Step.search(idRecipe, minStepNumber, maxStepNumber, minCookTime, maxCookTime,
                     instruction);
@@ -77,15 +53,15 @@ public class StepServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
         String action = req.getParameter("action");
-        int id = Integer.parseInt(req.getParameter("idStep"));
-        int idRecipe = Integer.parseInt(req.getParameter("stepIdRecipe"));
-        int number = Integer.parseInt(req.getParameter("stepNumber"));
-        String instruction = req.getParameter("stepInstruction");
-        LocalTime cookTime = LocalTime.parse(req.getParameter("stepCookTime"));
+        int id = Params.intValue(req, "idStep", 0);
+        int idRecipe = Params.requiredInt(req, "stepIdRecipe");
+        int number = Params.requiredInt(req, "stepNumber");
+        String instruction = Params.requiredString(req, "stepInstruction");
+        LocalTime cookTime = Params.requiredTime(req, "stepCookTime");
         Step step = new Step(id, idRecipe, number, instruction, cookTime);
 
         try {
-            if (action != null && action.equals("update")) {
+            if ("update".equals(action)) {
                 step.update();
             } else {
                 step.create();

@@ -2,7 +2,6 @@ package servlet;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.ArrayList;
 
 import jakarta.servlet.RequestDispatcher;
@@ -13,36 +12,22 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import dao.Recipe;
 import dao.RecipePriceHistory;
-
+import util.Params;
 
 public class RecipePriceHistoryServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
-            String action = req.getParameter("action");
-
             ArrayList<Recipe> recipies = Recipe.all();
-            ArrayList<RecipePriceHistory> recipePriceHistories;
 
-            int idRecipe = req.getParameter("searchIdRecipe") == null ? 0
-            : Integer.parseInt(req.getParameter("searchIdRecipe"));
+            int idRecipe = Params.intValue(req, "searchIdRecipe", 0);
+            LocalDate minChangeDate = Params.date(req, "searchMinChangeDate");
+            LocalDate maxChangeDate = Params.date(req, "searchMaxChangeDate");
 
-            String minChangeDateStr = req.getParameter("searchMinChangeDate");
-            String maxChangeDateStr = req.getParameter("searchMaxChangeDate");
-            LocalDate minChangeDate = null;
-            LocalDate maxChangeDate = null;
+            ArrayList<RecipePriceHistory> recipePriceHistories = RecipePriceHistory.search(idRecipe, minChangeDate,
+                    maxChangeDate, 0.0, 0.0, 0.0, 0.0);
 
-            if (minChangeDateStr != null && !minChangeDateStr.equals("")) {
-                minChangeDate = LocalDate.parse(minChangeDateStr);
-            }
-
-            if (maxChangeDateStr != null && !maxChangeDateStr.equals("")) {
-                maxChangeDate = LocalDate.parse(maxChangeDateStr);
-            }
-
-            recipePriceHistories = RecipePriceHistory.search(idRecipe, minChangeDate, maxChangeDate, 0.0, 0.0, 0.0, 0.0);
-            
             req.setAttribute("recipePriceHistories", recipePriceHistories);
             req.setAttribute("recipies", recipies);
             req.setAttribute("activeMenuItem", "recipe-price-history");
@@ -53,10 +38,6 @@ public class RecipePriceHistoryServlet extends HttpServlet {
         } catch (Exception e) {
             throw new ServletException(e);
         }
-    }
-
-    @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
     }
 
 }

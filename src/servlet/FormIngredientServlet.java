@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import dao.Ingredient;
+import util.Params;
 import util.SessionUtils;
 
 public class FormIngredientServlet extends HttpServlet {
@@ -23,7 +24,7 @@ public class FormIngredientServlet extends HttpServlet {
         Ingredient ingredient = new Ingredient();
 
         if (action != null && action.equals("update")) {
-            int id = Integer.parseInt(req.getParameter("id"));
+            int id = Params.requiredInt(req, "id");
             ingredient.setId(id);
             try {
                 ingredient.find();

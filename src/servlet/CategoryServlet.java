@@ -9,19 +9,19 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import dao.EntityInUseException;
 import dao.Category;
+import dao.EntityInUseException;
+import util.Params;
 
 public class CategoryServlet extends HttpServlet {
-    
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
             String action = req.getParameter("action");
 
-            if (action != null && action.equals("delete")) {
-                int id = Integer.parseInt(req.getParameter("id"));
-                Category category = new Category(id);
+            if ("delete".equals(action)) {
+                Category category = new Category(Params.requiredInt(req, "id"));
                 try {
                     category.delete();
                 } catch (EntityInUseException e) {
@@ -43,12 +43,12 @@ public class CategoryServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
         String action = req.getParameter("action");
-        int id = Integer.parseInt(req.getParameter("idCategory"));
-        String name = req.getParameter("categoryName");
+        int id = Params.intValue(req, "idCategory", 0);
+        String name = Params.requiredString(req, "categoryName");
         Category category = new Category(id, name);
-        
+
         try {
-            if (action != null && action.equals("update")) {
+            if ("update".equals(action)) {
                 category.update();
             } else {
                 category.create();

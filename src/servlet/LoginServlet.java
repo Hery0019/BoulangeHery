@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import dao.User;
+import util.Params;
 
 public class LoginServlet extends HttpServlet {
 
@@ -19,8 +20,8 @@ public class LoginServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException {
-        String email = req.getParameter("userEmail");
-        String password = req.getParameter("userPassword");
+        String email = Params.requiredString(req, "userEmail");
+        String password = Params.requiredString(req, "userPassword");
         User user = new User(email, password);
         try {
             user.findByEmailAndPassword();
