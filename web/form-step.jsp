@@ -1,4 +1,5 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
+<%@ page import="util.Html" %>
 <%@ page import="dao.Step, dao.Recipe, java.util.ArrayList, util.SessionUtils" %>
 <% boolean connected = SessionUtils.isUserConnected(request); %>
 <% Step step = (Step) request.getAttribute("step"); %>
@@ -52,24 +53,24 @@
                                 <div class="card-body">
                                     <form method="POST" action="step">
                                         <input type="hidden" name="action"
-                                               value="<%= request.getAttribute("action") %>">
-                                        <input type="hidden" name="idStep" value="<%= step.getId() %>">
+                                               value="<%= Html.esc(request.getAttribute("action")) %>">
+                                        <input type="hidden" name="idStep" value="<%= Html.esc(step.getId()) %>">
                                         <div class="mb-3">
                                             <label for="stepIdRecipe" class="form-label">Recette</label>
                                             <select name="stepIdRecipe" id="stepIdRecipe" class="form-select" required>
                                                 <% for (Recipe recipe : (ArrayList<Recipe>) request.getAttribute("recipes")) { %>
                                                 <option
-                                                        value="<%= recipe.getId() %>"
+                                                        value="<%= Html.esc(recipe.getId()) %>"
                                                         <% if (recipe.getId() == step.getIdRecipe())
                                                             out.println("selected"); %>
-                                                ><%= recipe.getTitle() %>
+                                                ><%= Html.esc(recipe.getTitle()) %>
                                                 </option>
                                                 <% } %>
                                             </select>
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label" for="stepNumber">Numéro d'étape</label>
-                                            <input name="stepNumber" value="<%= step.getNumber() %>" min="1"
+                                            <input name="stepNumber" value="<%= Html.esc(step.getNumber()) %>" min="1"
                                                    type="number" class="form-control" id="stepNumber"
                                                    placeholder="Titre"
                                                    required
@@ -80,7 +81,7 @@
                                             <textarea name="stepInstruction" class="form-control" id="stepInstruction"
                                                       rows="3"
                                                       required
-                                            ><%= step.getInstruction() %>
+                                            ><%= Html.esc(step.getInstruction()) %>
                                             </textarea>
                                         </div>
                                         <div class="mb-3">
@@ -89,7 +90,7 @@
                                                     préparation</label>
                                                 <small>heure:minute</small>
                                             </div>
-                                            <input value="<%= step.getFormattedCookTime() %>" name="stepCookTime"
+                                            <input value="<%= Html.esc(step.getFormattedCookTime()) %>" name="stepCookTime"
                                                    class="form-control" type="time" id="stepCookTime"
                                                    min="00:01"
                                                    required

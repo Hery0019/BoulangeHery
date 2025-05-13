@@ -1,4 +1,5 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
+<%@ page import="util.Html" %>
 <%@ page import="dao.Ingredient, util.SessionUtils" %>
 <%
     boolean connected = SessionUtils.isUserConnected(request);
@@ -53,11 +54,11 @@
                                 <div class="card-body">
                                     <form method="POST" action="ingredient">
                                         <input type="hidden" name="action"
-                                               value="<%= request.getAttribute("action") %>">
-                                        <input type="hidden" name="idIngredient" value="<%= ingredient.getId() %>">
+                                               value="<%= Html.esc(request.getAttribute("action")) %>">
+                                        <input type="hidden" name="idIngredient" value="<%= Html.esc(ingredient.getId()) %>">
                                         <div class="mb-3">
                                             <label class="form-label" for="ingredientName">Nom</label>
-                                            <input value="<%= ingredient.getName() %>" name="ingredientName"
+                                            <input value="<%= Html.esc(ingredient.getName()) %>" name="ingredientName"
                                                    type="text" class="form-control" id="ingredientName"
                                                    placeholder="Nom de la catégorie"
                                                    required
@@ -65,7 +66,7 @@
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label" for="ingredientUnit">Unité de mesure</label>
-                                            <input value="<%= ingredient.getUnit() %>" name="ingredientUnit"
+                                            <input value="<%= Html.esc(ingredient.getUnit()) %>" name="ingredientUnit"
                                                    type="text" class="form-control" id="ingredientUnit"
                                                    placeholder="Unité de mesure"
                                                    required
@@ -73,7 +74,7 @@
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label" for="ingredientPrice">Prix unitaire</label>
-                                            <input value="<%= ingredient.getPrice() %>" name="ingredientPrice"
+                                            <input value="<%= Html.esc(ingredient.getPrice()) %>" name="ingredientPrice"
                                                    min="1" type="number" class="form-control" id="ingredientPrice"
                                                    placeholder="Prix unitaire"
                                                    required

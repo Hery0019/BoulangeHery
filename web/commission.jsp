@@ -1,4 +1,5 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
+<%@ page import="util.Html" %>
 <%@ page import="dao.Recipe, dao.Vendeur, dao.Ingredient, dao.Commission, dao.Perfume, java.util.ArrayList, util.SessionUtils" %>
 <% boolean connected = SessionUtils.isUserConnected(request); %>
 
@@ -61,8 +62,8 @@
                                                     aria-label="Vendeur de recherche">
                                                 <option selected value="0">Tous les vendeurs</option>
                                                 <% for (Vendeur vendeur : (ArrayList<Vendeur>) request.getAttribute("vendeurs")) { %>
-                                                <option value="<%= vendeur.getId() %>">
-                                                    <%= vendeur.getFullName() %>
+                                                <option value="<%= Html.esc(vendeur.getId()) %>">
+                                                    <%= Html.esc(vendeur.getFullName()) %>
                                                 </option>
                                                 <% } %>
                                             </select>
@@ -84,8 +85,8 @@
                                                     aria-label="Catégorie de recherche">
                                                 <option selected value="0">Toutes les recettes</option>
                                                 <% for (Recipe recipe : (ArrayList<Recipe>) request.getAttribute("recipies")) { %>
-                                                <option value="<%= recipe.getId() %>">
-                                                    <%= recipe.getTitle() %>
+                                                <option value="<%= Html.esc(recipe.getId()) %>">
+                                                    <%= Html.esc(recipe.getTitle()) %>
                                                 </option>
                                                 <% } %>
                                             </select>
@@ -152,15 +153,15 @@
                                 <tbody class="table-border-bottom-0">
                                 <% for (Commission commission : (ArrayList<Commission>) request.getAttribute("commissions")) { %>
                                 <tr>
-                                    <td><strong><%= commission.getId() %>
+                                    <td><strong><%= Html.esc(commission.getId()) %>
                                     </strong></td>
-                                    <td><%= Vendeur.findById(commission.getIdVendeur()).getFullName() %>
+                                    <td><%= Html.esc(Vendeur.findById(commission.getIdVendeur()).getFullName()) %>
                                     </td>
-                                    <td><%= Recipe.findById(commission.getIdRecipe()).getTitle() %>
+                                    <td><%= Html.esc(Recipe.findById(commission.getIdRecipe()).getTitle()) %>
                                     </td> 
-                                    <td><%= commission.getCommissionsAmount() %>
+                                    <td><%= Html.esc(commission.getCommissionsAmount()) %>
                                     </td>
-                                    <td><%= commission.getFormattedcommissionDate() %>
+                                    <td><%= Html.esc(commission.getFormattedcommissionDate()) %>
                                     </td> 
                                 </tr>
                                 <% } %>
@@ -177,7 +178,7 @@
                                     totalCommissions += commission.getCommissionsAmount();
                                 }
                             %>
-                            <%= String.format("%.2f", totalCommissions) %> 
+                            <%= Html.esc(String.format("%.2f", totalCommissions)) %> 
                         </h2>
                     </div>
                     <!--/ Basic Bootstrap Table -->

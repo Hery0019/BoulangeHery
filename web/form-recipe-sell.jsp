@@ -1,4 +1,5 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
+<%@ page import="util.Html" %>
 <%@ page import="dao.Perfume, dao.Recipe, dao.Vendeur, dao.RecipeSell, dao.Category, dao.Perfume, dao.User, java.util.ArrayList, util.SessionUtils" %>
 
 <%
@@ -48,15 +49,15 @@ try {
                                 </div>
                                 <div class="card-body">
                                     <form method="POST" action="recipe-sell">
-                                        <input type="hidden" name="action" value="<%= request.getAttribute("action") %>">
-                                        <input type="hidden" name="idRecipeSell" value="<%= recipeSell.getId() %>">
+                                        <input type="hidden" name="action" value="<%= Html.esc(request.getAttribute("action")) %>">
+                                        <input type="hidden" name="idRecipeSell" value="<%= Html.esc(recipeSell.getId()) %>">
 
                                         <div class="mb-3">
                                             <label for="recipeSellerId" class="form-label">Vendeur</label>
                                             <select name="recipeSellerId" id="recipeSellerId" class="form-select" required>
                                                 <% for (Vendeur vendeur : (ArrayList<Vendeur>) request.getAttribute("vendeurs")) { %>
-                                                <option value="<%= vendeur.getId() %>" <% if (vendeur.getId() == recipeSell.getIdVendeur()) { %>selected<% } %>>
-                                                    <%= vendeur.getFullName() %>
+                                                <option value="<%= Html.esc(vendeur.getId()) %>" <% if (vendeur.getId() == recipeSell.getIdVendeur()) { %>selected<% } %>>
+                                                    <%= Html.esc(vendeur.getFullName()) %>
                                                 </option>
                                                 <% } %>
                                             </select>
@@ -66,8 +67,8 @@ try {
                                             <label for="recipeSellIdUser" class="form-label">Utilisateur</label>
                                             <select name="recipeSellIdUser" id="recipeSellIdUser" class="form-select" required>
                                                 <% for (User user : (ArrayList<User>) request.getAttribute("users")) { %>
-                                                <option value="<%= user.getId() %>" <% if (user.getId() == recipeSell.getIdUser()) { %>selected<% } %>>
-                                                    <%= user.getFullName() %>
+                                                <option value="<%= Html.esc(user.getId()) %>" <% if (user.getId() == recipeSell.getIdUser()) { %>selected<% } %>>
+                                                    <%= Html.esc(user.getFullName()) %>
                                                 </option>
                                                 <% } %>
                                             </select>
@@ -77,8 +78,8 @@ try {
                                             <label for="idRecipe" class="form-label">Recette</label>
                                             <select name="idRecipe" id="idRecipe" class="form-select" required>
                                                 <% for (Recipe recipe : (ArrayList<Recipe>) request.getAttribute("recipies")) { %>
-                                                <option value="<%= recipe.getId() %>" <% if (recipe.getId() == recipeSell.getIdRecipe()) { %>selected<% } %>>
-                                                    <%= recipe.getTitle() %> - <%= recipe.getPrice() %>
+                                                <option value="<%= Html.esc(recipe.getId()) %>" <% if (recipe.getId() == recipeSell.getIdRecipe()) { %>selected<% } %>>
+                                                    <%= Html.esc(recipe.getTitle()) %> - <%= Html.esc(recipe.getPrice()) %>
                                                 </option>
                                                 <% } %>
                                             </select>
@@ -86,17 +87,17 @@ try {
 
                                         <div class="mb-3">
                                             <label class="form-label" for="recipeSellCombien">Combien</label>
-                                            <input value="<%= recipeSell.getCombien() %>" name="recipeSellCombien" type="number" class="form-control" id="recipeSellCombien" placeholder="Combien" required />
+                                            <input value="<%= Html.esc(recipeSell.getCombien()) %>" name="recipeSellCombien" type="number" class="form-control" id="recipeSellCombien" placeholder="Combien" required />
                                         </div>
 
                                         <div class="mb-3">
                                             <label class="form-label" for="recipeSellArgent">Argent</label>
-                                            <input value="<%= recipeSell.getArgent() %>" name="recipeSellArgent" type="number" class="form-control" id="recipeSellArgent" placeholder="Argent" required />
+                                            <input value="<%= Html.esc(recipeSell.getArgent()) %>" name="recipeSellArgent" type="number" class="form-control" id="recipeSellArgent" placeholder="Argent" required />
                                         </div>
 
                                         <div class="mb-3">
                                             <label class="form-label" for="recipeSellDate">Date de vente</label>
-                                            <input value="<%= recipeSell.getFormattedCreatedDate() %>" name="recipeSellDate" type="date" class="form-control" id="recipeSellDate" required />
+                                            <input value="<%= Html.esc(recipeSell.getFormattedCreatedDate()) %>" name="recipeSellDate" type="date" class="form-control" id="recipeSellDate" required />
                                         </div>
 
                                         <% if (request.getAttribute("action").equals("create")) { %>

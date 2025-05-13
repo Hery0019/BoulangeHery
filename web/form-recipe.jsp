@@ -1,4 +1,5 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
+<%@ page import="util.Html" %>
 <%@ page import="dao.Perfume, dao.Recipe, dao.Category, java.util.ArrayList, util.SessionUtils" %>
 <% boolean connected = SessionUtils.isUserConnected(request); %>
 <% Recipe recipe = (Recipe) request.getAttribute("recipe"); %>
@@ -54,11 +55,11 @@
                                             action="recipe"
                                     >
                                         <input type="hidden" name="action"
-                                               value="<%= request.getAttribute("action") %>">
-                                        <input type="hidden" name="idRecipe" value="<%= recipe.getId() %>">
+                                               value="<%= Html.esc(request.getAttribute("action")) %>">
+                                        <input type="hidden" name="idRecipe" value="<%= Html.esc(recipe.getId()) %>">
                                         <div class="mb-3">
                                             <label class="form-label" for="recipeTitle">Titre</label>
-                                            <input value="<%= recipe.getTitle() %>" name="recipeTitle" type="text"
+                                            <input value="<%= Html.esc(recipe.getTitle()) %>" name="recipeTitle" type="text"
                                                    class="form-control" id="recipeTitle" placeholder="Titre"
                                                    required
                                             />
@@ -69,7 +70,7 @@
                                                       id="recipeDescription"
                                                       rows="3"
                                                       required
-                                            ><%= recipe.getDescription() %>
+                                            ><%= Html.esc(recipe.getDescription()) %>
                                             </textarea>
                                         </div>
 
@@ -78,10 +79,10 @@
                                             <select name="recipeIdCategory" id="recipeIdCategory" class="form-select" required>
                                                 <% for (Category category : (ArrayList<Category>) request.getAttribute("categories")) { %>
                                                 <option
-                                                        value="<%= category.getId() %>"
+                                                        value="<%= Html.esc(category.getId()) %>"
                                                         <% if (category.getId() == recipe.getIdCategory()) { %>selected<% } %>
                                                 >
-                                                    <%= category.getName() %>
+                                                    <%= Html.esc(category.getName()) %>
                                                 </option>
                                                 <% } %>
                                             </select>
@@ -92,10 +93,10 @@
                                             <select name="recipeIdPerfume" id="recipeIdPerfume" class="form-select" required>
                                                 <% for (Perfume perfume : (ArrayList<Perfume>) request.getAttribute("perfumes")) { %>
                                                 <option
-                                                        value="<%= perfume.getId() %>"
+                                                        value="<%= Html.esc(perfume.getId()) %>"
                                                         <% if (perfume.getId() == recipe.getIdPerfume()) { %>selected<% } %>
                                                 >
-                                                    <%= perfume.getName() %>
+                                                    <%= Html.esc(perfume.getName()) %>
                                                 </option>
                                                 <% } %>
                                             </select>
@@ -103,7 +104,7 @@
 
                                         <div class="mb-3">
                                             <label class="form-label" for="recipePrice">Prix</label>
-                                            <input value="<%= recipe.getPrice() %>" name="recipePrice" type="number"
+                                            <input value="<%= Html.esc(recipe.getPrice()) %>" name="recipePrice" type="number"
                                                    class="form-control" id="recipePrice"
                                                    placeholder="Prix"
                                                    required
@@ -115,7 +116,7 @@
                                                     préparation</label>
                                                 <small>heure:minute</small>
                                             </div>
-                                            <input value="<%= recipe.getFormattedCookTime() %>" name="recipeCookTime"
+                                            <input value="<%= Html.esc(recipe.getFormattedCookTime()) %>" name="recipeCookTime"
                                                    class="form-control" type="time" id="recipeCookTime"
                                                    min="00:01"
                                                    <% if ("update".equals(request.getAttribute("action"))) { %>readonly title="Calculé automatiquement à partir des étapes"<% } %>
@@ -124,7 +125,7 @@
                                         </div> 
                                         <div class="mb-3">
                                             <label class="form-label" for="recipeCreator">Créé par</label>
-                                            <input value="<%= recipe.getCreatedBy() %>" name="recipeCreator" type="text"
+                                            <input value="<%= Html.esc(recipe.getCreatedBy()) %>" name="recipeCreator" type="text"
                                                    class="form-control" id="recipeCreator"
                                                    placeholder="Nom du créateur"
                                                    required
@@ -132,7 +133,7 @@
                                         </div> 
                                         <div class="mb-3">
                                             <label class="form-label" for="recipeCreationDate">Date de création</label>
-                                            <input value="<%= recipe.getFormattedCreatedDate() %>"
+                                            <input value="<%= Html.esc(recipe.getFormattedCreatedDate()) %>"
                                                    name="recipeCreationDate" type="date" class="form-control"
                                                    id="recipeCreationDate"
                                                    required

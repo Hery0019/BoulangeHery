@@ -1,4 +1,5 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
+<%@ page import="util.Html" %>
 <%@ page import="dao.Step, dao.Recipe, dao.User, java.util.ArrayList, util.SessionUtils" %>
 <li class="nav-item navbar-dropdown dropdown-user dropdown">
     <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
@@ -16,8 +17,8 @@
                         </div>
                     </div>
                     <div class="flex-grow-1">
-                        <span class="fw-semibold d-block"><%= connected ? SessionUtils.getConnectedUser(request).getFullName() : "Anonyme" %></span>
-                        <small class="text-muted"><%= connected ? "Admin" : "Non connecté" %>
+                        <span class="fw-semibold d-block"><%= Html.esc(connected ? SessionUtils.getConnectedUser(request).getFullName() : "Anonyme") %></span>
+                        <small class="text-muted"><%= Html.esc(connected ? "Admin" : "Non connecté") %>
                         </small>
                     </div>
                 </div>

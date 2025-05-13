@@ -1,4 +1,5 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
+<%@ page import="util.Html" %>
 <%@ page import="dao.Review, dao.User, dao.Recipe, java.util.ArrayList, util.SessionUtils" %>
 <% boolean connected = SessionUtils.isUserConnected(request); %>
 
@@ -61,8 +62,8 @@
                                                     aria-label="Utilisateur">
                                                 <option selected value="0">Tous les clients</option>
                                                 <% for (User user : (ArrayList<User>) request.getAttribute("users")) { %>
-                                                <option value="<%= user.getId() %>">
-                                                    <%= user.getFullName() %>
+                                                <option value="<%= Html.esc(user.getId()) %>">
+                                                    <%= Html.esc(user.getFullName()) %>
                                                 </option>
                                                 <% } %>
                                             </select>
@@ -73,8 +74,8 @@
                                                     aria-label="Utilisateur">
                                                 <option selected value="0">Toutes les recettes</option>
                                                 <% for (Recipe recipe : (ArrayList<Recipe>) request.getAttribute("recipes")) { %>
-                                                <option value="<%= recipe.getId() %>">
-                                                    <%= recipe.getTitle() %>
+                                                <option value="<%= Html.esc(recipe.getId()) %>">
+                                                    <%= Html.esc(recipe.getTitle()) %>
                                                 </option>
                                                 <% } %>
                                             </select>
@@ -197,11 +198,11 @@
                                     <div class="card h-100 d-flex flex-column">
 
                                         <!-- Image en haut de la carte -->
-                                        <img src="<%= Recipe.findById(review.getIdRecipe()).getPicture() %>" alt="Image du plat" class="card-img-top object-fit-cover" style="height: 200px;">
+                                        <img src="<%= Html.esc(Recipe.findById(review.getIdRecipe()).getPicture()) %>" alt="Image du plat" class="card-img-top object-fit-cover" style="height: 200px;">
 
                                         <div class="card-body d-flex flex-column">
                                             <div class="card-subtitle text-muted mb-3 fw-bold">
-                                                <%= Recipe.findById(review.getIdRecipe()).getTitle() %>
+                                                <%= Html.esc(Recipe.findById(review.getIdRecipe()).getTitle()) %>
                                             </div>
 
                                             <div class="stars mb-2">
@@ -222,17 +223,17 @@
 
                                             <p class="card-text">
                                                 <small class="text-muted">
-                                                    <%= review.getHumanFormattedDate() %>
+                                                    <%= Html.esc(review.getHumanFormattedDate()) %>
                                                 </small>
                                             </p>
 
                                             <% if (connected) { %>
                                             <div class="mt-auto d-flex justify-content-between">
-                                                <a href="form-review?action=update&id=<%= review.getId() %>" type="button"
+                                                <a href="form-review?action=update&id=<%= Html.esc(review.getId()) %>" type="button"
                                                 class="update-btn btn rounded-pill btn-icon btn-outline-secondary">
                                                     <span class="tf-icons bx bx-edit"></span>
                                                 </a>
-                                                <a href="review?action=delete&id=<%= review.getId() %>" type="button"
+                                                <a href="review?action=delete&id=<%= Html.esc(review.getId()) %>" type="button"
                                                 class="delete-btn btn rounded-pill btn-icon btn-outline-danger">
                                                     <span class="tf-icons bx bx-trash"></span>
                                                 </a>

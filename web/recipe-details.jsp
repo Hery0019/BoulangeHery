@@ -1,4 +1,5 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
+<%@ page import="util.Html" %>
 <%@ page import="dao.Recipe, dao.Step, java.util.ArrayList, util.SessionUtils" %>
 <%@ page import="dao.RecipeIngredient" %>
 <%
@@ -43,24 +44,24 @@
                 <!-- Content -->
                 <div class="container-xxl flex-grow-1 container-p-y">
                     <h4 class="fw-bold py-3 mb-4"><span
-                            class="text-muted fw-light">Gotta taste / Recettes / </span><%= recipe.getTitle() %>
+                            class="text-muted fw-light">Gotta taste / Recettes / </span><%= Html.esc(recipe.getTitle()) %>
                     </h4>
 
                     <div class="card mb-3">
-                        <h1 class="card-header pb-3"><%= recipe.getTitle() %> <span
-                                class="fs-0-5em text-muted fw-normal"><%= recipe.getCreatedBy() %></span></h1>
+                        <h1 class="card-header pb-3"><%= Html.esc(recipe.getTitle()) %> <span
+                                class="fs-0-5em text-muted fw-normal"><%= Html.esc(recipe.getCreatedBy()) %></span></h1>
                         <div class="card-body">
-                            <p class="card-subtitle text-muted"><%= recipe.getHumanFormattedCreatedDate() %>
+                            <p class="card-subtitle text-muted"><%= Html.esc(recipe.getHumanFormattedCreatedDate()) %>
                             </p>
                             <div class="divider text-end mt-0 mb-2">
                                 <div class="divider-text"></div>
                             </div>
                             <p class="card-text">
-                                <span>Catégorie <span class="fw-bold">#<%= recipe.getIdCategory() %></span></span>
+                                <span>Catégorie <span class="fw-bold">#<%= Html.esc(recipe.getIdCategory()) %></span></span>
                                 <span class="ps-4">Temps de préparation : <span
-                                        class="fw-bold"><%= recipe.getHumanFormattedCookTime() %></span></span>
+                                        class="fw-bold"><%= Html.esc(recipe.getHumanFormattedCookTime()) %></span></span>
                             </p>
-                            <p class="card-text w-50"><%= recipe.getDescription() %>
+                            <p class="card-text w-50"><%= Html.esc(recipe.getDescription()) %>
                             </p>
                         </div>
                     </div>
@@ -69,7 +70,7 @@
                     <div class="card mb-3">
                         <h5 class="card-header">Ingrédients de la recette</h5>
                         <% if (SessionUtils.isUserConnected(request)) { %>
-                        <div class="card-body"><a href="form-recipe-ingredient?idRecipe=<%= recipe.getId() %>" type="button" class="btn btn-success">Ajouter</a>
+                        <div class="card-body"><a href="form-recipe-ingredient?idRecipe=<%= Html.esc(recipe.getId()) %>" type="button" class="btn btn-success">Ajouter</a>
                         </div>
                         <% } %>
                         <div class="table-responsive text-nowrap" style="overflow-x: visible;">
@@ -87,11 +88,11 @@
                                 <tbody class="table-border-bottom-0">
                                 <% for (RecipeIngredient recipeIngredient : recipeIngredients) { %>
                                 <tr>
-                                    <td><strong><%= recipeIngredient.getIdIngredient() %>
+                                    <td><strong><%= Html.esc(recipeIngredient.getIdIngredient()) %>
                                     </strong></td>
-                                    <td><%= recipeIngredient.getIngredientName() %>
+                                    <td><%= Html.esc(recipeIngredient.getIngredientName()) %>
                                     </td>
-                                    <td><%= recipeIngredient.getQuantity() %> <%= recipeIngredient.getIngredientUnit() %>
+                                    <td><%= Html.esc(recipeIngredient.getQuantity()) %> <%= Html.esc(recipeIngredient.getIngredientUnit()) %>
                                     </td>
                                     <% if (SessionUtils.isUserConnected(request)) { %>
                                     <td>
@@ -102,12 +103,12 @@
                                             </button>
                                             <div class="dropdown-menu">
                                                 <a class="dropdown-item"
-                                                   href="form-recipe-ingredient?action=update&idRecipe=<%= recipeIngredient.getIdRecipe() %>&idIngredient=<%= recipeIngredient.getIdIngredient() %>">
+                                                   href="form-recipe-ingredient?action=update&idRecipe=<%= Html.esc(recipeIngredient.getIdRecipe()) %>&idIngredient=<%= Html.esc(recipeIngredient.getIdIngredient()) %>">
                                                     <i class="bx bx-edit-alt me-1"></i>
                                                     Modifier
                                                 </a>
                                                 <a class="dropdown-item"
-                                                   href="recipe-ingredient?action=delete&idRecipe=<%= recipeIngredient.getIdRecipe() %>&idIngredient=<%= recipeIngredient.getIdIngredient() %>">
+                                                   href="recipe-ingredient?action=delete&idRecipe=<%= Html.esc(recipeIngredient.getIdRecipe()) %>&idIngredient=<%= Html.esc(recipeIngredient.getIdIngredient()) %>">
                                                     <i class="bx bx-trash me-1"></i>
                                                     Supprimer
                                                 </a>
@@ -128,23 +129,23 @@
                         <h5 class="card-header">Etapes de la recette</h5>
                         <div class="card-body">
                             <% if (SessionUtils.isUserConnected(request)) { %>
-                            <a href="form-step?idRecipe=<%= recipe.getId() %>" type="button" class="btn btn-success mb-4">Ajouter</a>
+                            <a href="form-step?idRecipe=<%= Html.esc(recipe.getId()) %>" type="button" class="btn btn-success mb-4">Ajouter</a>
                             <% } %>
                             <div class="list-group">
                                 <% for (Step step : steps) { %>
                                 <div class="list-group-item flex-column align-items-start p-3">
                                     <div class="d-flex justify-content-between w-100">
-                                        <h6 class="mb-2">Etape <%= step.getNumber() %></h6>
-                                        <h6 class="mb-2"><%= step.getHumanFormattedCookTime() %></h6>
+                                        <h6 class="mb-2">Etape <%= Html.esc(step.getNumber()) %></h6>
+                                        <h6 class="mb-2"><%= Html.esc(step.getHumanFormattedCookTime()) %></h6>
                                     </div>
-                                    <p class="mb-1 w-50"><%= step.getInstruction() %></p>
+                                    <p class="mb-1 w-50"><%= Html.esc(step.getInstruction()) %></p>
                                     <% if (SessionUtils.isUserConnected(request)) { %>
                                     <div class="actions">
-                                        <a href="form-step?action=update&id=<%= step.getId() %>" type="button"
+                                        <a href="form-step?action=update&id=<%= Html.esc(step.getId()) %>" type="button"
                                         class="update-btn btn rounded-pill btn-icon btn-outline-secondary me-2">
                                             <span class="tf-icons bx bx-edit"></span>
                                         </a>
-                                        <a href="step?action=delete&id=<%= step.getId() %>" type="button"
+                                        <a href="step?action=delete&id=<%= Html.esc(step.getId()) %>" type="button"
                                         class="delete-btn btn rounded-pill btn-icon btn-outline-danger">
                                             <span class="tf-icons bx bx-trash"></span>
                                         </a>

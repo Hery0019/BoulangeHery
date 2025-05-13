@@ -1,5 +1,6 @@
 
 <%@ page contentType="text/html; charset=UTF-8" %>
+<%@ page import="util.Html" %>
 <%@ page import="dao.Recipe, dao.Category, dao.User, dao.RecipeSell, java.util.ArrayList, util.SessionUtils" %>
 <%@ page import="java.lang.Exception" %>
 
@@ -64,8 +65,8 @@
                                                     aria-label="Catégorie de recherche">
                                                 <option selected value="0">Toutes les recettes</option>
                                                 <% for (Recipe recipe : (ArrayList<Recipe>) request.getAttribute("recipies")) { %>
-                                                <option value="<%= recipe.getId() %>">
-                                                    <%= recipe.getTitle() %>
+                                                <option value="<%= Html.esc(recipe.getId()) %>">
+                                                    <%= Html.esc(recipe.getTitle()) %>
                                                 </option>
                                                 <% } %>
                                             </select>
@@ -76,8 +77,8 @@
                                                     aria-label="Catégorie de recherche">
                                                 <option selected value="0">Toutes les catégories</option>
                                                 <% for (Category category : (ArrayList<Category>) request.getAttribute("categories")) { %>
-                                                <option value="<%= category.getId() %>">
-                                                    <%= category.getName() %>
+                                                <option value="<%= Html.esc(category.getId()) %>">
+                                                    <%= Html.esc(category.getName()) %>
                                                 </option>
                                                 <% } %>
                                             </select>
@@ -88,8 +89,8 @@
                                                     aria-label="Recherche Utilisateur">
                                                 <option selected value="0">Tous les utilisateurs</option>
                                                 <% for (User user : (ArrayList<User>) request.getAttribute("users")) { %>
-                                                <option value="<%= user.getId() %>">
-                                                    <%= user.getFullName() %>
+                                                <option value="<%= Html.esc(user.getId()) %>">
+                                                    <%= Html.esc(user.getFullName()) %>
                                                 </option>
                                                 <% } %>
                                             </select>
@@ -180,7 +181,7 @@
                     </div>
                     <!-- Search modal -->
 
-                    <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">BoulangeHery /</span> Vente de Recettes <%= ((ArrayList<RecipeSell>) request.getAttribute("recipeSells")).size() %></h4>
+                    <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">BoulangeHery /</span> Vente de Recettes <%= Html.esc(((ArrayList<RecipeSell>) request.getAttribute("recipeSells")).size()) %></h4>
 
                     <!-- Basic Bootstrap Table -->
                     <div class="card">
@@ -207,20 +208,20 @@
                                 <tbody class="table-border-bottom-0">
                                     <% for (RecipeSell recipeSell : (ArrayList<RecipeSell>) request.getAttribute("recipeSells")) { %>
                                     <tr>
-                                        <td><strong><%= recipeSell.getId() %>
+                                        <td><strong><%= Html.esc(recipeSell.getId()) %>
                                         </strong></td>
-                                        <td><%= (User.findById(recipeSell.getIdUser())).getFullName() %>
+                                        <td><%= Html.esc((User.findById(recipeSell.getIdUser())).getFullName()) %>
                                         </td>
-                                        <td><%= (Recipe.findById(recipeSell.getIdRecipe())).getTitle() %>
+                                        <td><%= Html.esc((Recipe.findById(recipeSell.getIdRecipe())).getTitle()) %>
                                         </td>
-                                        <td><%= (Category.findById(recipeSell.getIdCategory())).getName() %>
+                                        <td><%= Html.esc((Category.findById(recipeSell.getIdCategory())).getName()) %>
                                         </td>
-                                        <td><%= recipeSell.getCombien() %>
+                                        <td><%= Html.esc(recipeSell.getCombien()) %>
                                         </td> 
-                                        <td><%= recipeSell.getArgent() %>
+                                        <td><%= Html.esc(recipeSell.getArgent()) %>
                                         </td>
-                                        <td><%= recipeSell.getReste() %></td>
-                                        <td><%= recipeSell.getHumanFormattedCreatedDate() %>
+                                        <td><%= Html.esc(recipeSell.getReste()) %></td>
+                                        <td><%= Html.esc(recipeSell.getHumanFormattedCreatedDate()) %>
                                         </td> 
                                         <td>
                                             <div class="dropdown">
@@ -229,18 +230,18 @@
                                                     <i class="bx bx-dots-vertical-rounded"></i>
                                                 </button>
                                                 <div class="dropdown-menu">
-                                                    <a class="dropdown-item" href="recipe-details?idRecipe=<%= recipeSell.getIdRecipe() %>">
+                                                    <a class="dropdown-item" href="recipe-details?idRecipe=<%= Html.esc(recipeSell.getIdRecipe()) %>">
                                                         <i class="bx bx-book-content me-1"></i>
                                                         Détails
                                                     </a>
                                                     <% if (connected) { %>
                                                     <a class="dropdown-item"
-                                                    href="form-recipe-sell?action=update&id=<%= recipeSell.getId() %>">
+                                                    href="form-recipe-sell?action=update&id=<%= Html.esc(recipeSell.getId()) %>">
                                                         <i class="bx bx-edit-alt me-1"></i>
                                                         Modifier
                                                     </a>
                                                     <a class="dropdown-item"
-                                                    href="recipe-sell?action=delete&id=<%= recipeSell.getId() %>">
+                                                    href="recipe-sell?action=delete&id=<%= Html.esc(recipeSell.getId()) %>">
                                                         <i class="bx bx-trash me-1"></i>
                                                         Supprimer
                                                     </a>

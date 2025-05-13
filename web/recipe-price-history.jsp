@@ -1,4 +1,5 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
+<%@ page import="util.Html" %>
 <%@ page import="dao.Recipe, dao.RecipePriceHistory, java.util.ArrayList, util.SessionUtils" %>
 <% boolean connected = SessionUtils.isUserConnected(request); %>
 
@@ -61,8 +62,8 @@
                                                     aria-label="Catégorie de recherche">
                                                 <option selected value="0">Toutes les recettes</option>
                                                 <% for (Recipe recipe : (ArrayList<Recipe>) request.getAttribute("recipies")) { %>
-                                                <option value="<%= recipe.getId() %>">
-                                                    <%= recipe.getTitle() %>
+                                                <option value="<%= Html.esc(recipe.getId()) %>">
+                                                    <%= Html.esc(recipe.getTitle()) %>
                                                 </option>
                                                 <% } %>
                                             </select>
@@ -122,15 +123,15 @@
                                 <tbody class="table-border-bottom-0">
                                 <% for (RecipePriceHistory recipePriceHistory : (ArrayList<RecipePriceHistory>) request.getAttribute("recipePriceHistories")) { %>
                                 <tr>
-                                    <td><strong><%= recipePriceHistory.getId() %>
+                                    <td><strong><%= Html.esc(recipePriceHistory.getId()) %>
                                     </strong></td>
-                                    <td><%= Recipe.findById(recipePriceHistory.getIdRecipe()).getTitle() %> 
+                                    <td><%= Html.esc(Recipe.findById(recipePriceHistory.getIdRecipe()).getTitle()) %> 
                                     </td> 
-                                    <td> Ar <%= recipePriceHistory.getPriceBefore() %> 
+                                    <td> Ar <%= Html.esc(recipePriceHistory.getPriceBefore()) %> 
                                     </td>
-                                    <td> Ar <%= recipePriceHistory.getPriceAfter() %> 
+                                    <td> Ar <%= Html.esc(recipePriceHistory.getPriceAfter()) %> 
                                     </td> 
-                                    <td><%= recipePriceHistory.getHumanFormattedChangeDate() %>
+                                    <td><%= Html.esc(recipePriceHistory.getHumanFormattedChangeDate()) %>
                                     </td> 
                                 </tr>
                                 <% } %>

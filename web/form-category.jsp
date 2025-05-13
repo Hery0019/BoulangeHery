@@ -1,4 +1,5 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
+<%@ page import="util.Html" %>
 <%@ page import="dao.Category, util.SessionUtils" %>
 <% boolean connected = SessionUtils.isUserConnected(request); %>
 <% Category category = (Category) request.getAttribute("category"); %>
@@ -51,11 +52,11 @@
                                 </div>
                                 <div class="card-body">
                                     <form method="POST" action="category">
-                                        <input type="hidden" name="action" value="<%= request.getAttribute("action") %>">
-                                        <input type="hidden" name="idCategory" value="<%= category.getId() %>">
+                                        <input type="hidden" name="action" value="<%= Html.esc(request.getAttribute("action")) %>">
+                                        <input type="hidden" name="idCategory" value="<%= Html.esc(category.getId()) %>">
                                         <div class="mb-3">
                                             <label class="form-label" for="categoryName">Nom</label>
-                                            <input value="<%= category.getName() %>" name="categoryName" type="text"
+                                            <input value="<%= Html.esc(category.getName()) %>" name="categoryName" type="text"
                                                    class="form-control" id="categoryName"
                                                    placeholder="Nom de la catégorie"
                                                    required

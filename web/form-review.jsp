@@ -1,4 +1,5 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
+<%@ page import="util.Html" %>
 <%@ page import="dao.Recipe, dao.Review, java.util.ArrayList, util.SessionUtils" %>
 <% boolean connected = SessionUtils.isUserConnected(request); %>
 <% Review review = (Review) request.getAttribute("review"); %>
@@ -51,18 +52,18 @@
                                 <div class="card-body">
                                     <form method="POST" action="review">
                                         <input type="hidden" name="action"
-                                               value="<%= request.getAttribute("action") %>">
-                                        <input type="hidden" name="idReview" value="<%= review.getId() %>">
+                                               value="<%= Html.esc(request.getAttribute("action")) %>">
+                                        <input type="hidden" name="idReview" value="<%= Html.esc(review.getId()) %>">
                                         <input type="hidden" name="reviewIdUser" value="3">
                                         <div class="mb-3">
                                             <label for="reviewIdRecipe" class="form-label">Plat</label>
                                             <select name="reviewIdRecipe" id="reviewIdRecipe" class="form-select" required>
                                                 <% for (Recipe recipe : (ArrayList<Recipe>) request.getAttribute("recipes")) { %>
                                                 <option
-                                                        value="<%= recipe.getId() %>"
+                                                        value="<%= Html.esc(recipe.getId()) %>"
                                                         <% if (recipe.getId() == review.getIdRecipe()) { %>selected<% } %>
                                                 >
-                                                    <%= recipe.getTitle() %>
+                                                    <%= Html.esc(recipe.getTitle()) %>
                                                 </option>
                                                 <% } %>
                                             </select>
@@ -73,13 +74,13 @@
                                                 <%
                                                     for (int i = 1; i <= 5; i++) {
                                                 %>
-                                                <label for="reviewRating<%= i %>">
+                                                <label for="reviewRating<%= Html.esc(i) %>">
                                                     <i class="bx bx-star"></i>
                                                     <input
                                                             type="radio"
                                                             name="reviewRating"
-                                                            id="reviewRating<%= i %>"
-                                                            value="<%= i %>"
+                                                            id="reviewRating<%= Html.esc(i) %>"
+                                                            value="<%= Html.esc(i) %>"
                                                         <% if(i == review.getRating()) out.println("checked"); %>
                                                     >
                                                 </label>
@@ -94,7 +95,7 @@
                                                       rows="3"
                                                       required
                                             >
-                                                <%= review.getComment() %>
+                                                <%= Html.esc(review.getComment()) %>
                                             </textarea>
                                         </div>
                                         <% if (request.getAttribute("action").equals("create")) { %>

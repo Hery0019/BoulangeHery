@@ -1,4 +1,5 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
+<%@ page import="util.Html" %>
 <%@ page import="dao.Recipe, dao.Category, dao.Ingredient, dao.Perfume, java.util.ArrayList, util.SessionUtils" %>
 <% boolean connected = SessionUtils.isUserConnected(request); %>
 
@@ -72,8 +73,8 @@
                                                     aria-label="Catégorie de recherche">
                                                 <option selected value="0">Toutes les catégories</option>
                                                 <% for (Category category : (ArrayList<Category>) request.getAttribute("categories")) { %>
-                                                <option value="<%= category.getId() %>">
-                                                    <%= category.getName() %>
+                                                <option value="<%= Html.esc(category.getId()) %>">
+                                                    <%= Html.esc(category.getName()) %>
                                                 </option>
                                                 <% } %>
                                             </select>
@@ -84,8 +85,8 @@
                                                     aria-label="Catégorie de recherche">
                                                 <option selected value="0">Toutes les parfums</option>
                                                 <% for (Perfume perfume : (ArrayList<Perfume>) request.getAttribute("perfumes")) { %>
-                                                <option value="<%= perfume.getId() %>">
-                                                    <%= perfume.getName() %>
+                                                <option value="<%= Html.esc(perfume.getId()) %>">
+                                                    <%= Html.esc(perfume.getName()) %>
                                                 </option>
                                                 <% } %>
                                             </select>
@@ -111,12 +112,12 @@
                                                         <input
                                                             class="form-check-input"
                                                             type="checkbox"
-                                                            id="ingredient-<%= ingredient.getId() %>"
+                                                            id="ingredient-<%= Html.esc(ingredient.getId()) %>"
                                                             name="idIngredients"
-                                                            value="<%= ingredient.getId() %>"
+                                                            value="<%= Html.esc(ingredient.getId()) %>"
                                                         />
-                                                        <label class="form-check-label" for="ingredient-<%= ingredient.getId() %>">
-                                                            <%= ingredient.getName() %>
+                                                        <label class="form-check-label" for="ingredient-<%= Html.esc(ingredient.getId()) %>">
+                                                            <%= Html.esc(ingredient.getName()) %>
                                                         </label>
                                                     </div>
                                                 </div>
@@ -205,7 +206,7 @@
                         <% if (request.getAttribute("errorMessage") != null) { %>
                         <div class="card-body pb-0">
                             <div class="alert alert-danger alert-dismissible mb-0" role="alert">
-                                <%= request.getAttribute("errorMessage") %>
+                                <%= Html.esc(request.getAttribute("errorMessage")) %>
                                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                             </div>
                         </div>
@@ -223,35 +224,35 @@
                                 <div class="col">
                                     <div class="card h-100 d-flex flex-column">
                                         <!-- Image en haut de la carte -->
-                                        <img src="<%= recipe.getPicture() %>" alt="Image de la recette" class="card-img-top object-fit-cover" style="height: 200px;">
+                                        <img src="<%= Html.esc(recipe.getPicture()) %>" alt="Image de la recette" class="card-img-top object-fit-cover" style="height: 200px;">
 
                                         <div class="card-body d-flex flex-column">
                                             <div class="card-subtitle text-muted mb-3 fw-bold">
-                                                <%= recipe.getTitle() %>
+                                                <%= Html.esc(recipe.getTitle()) %>
                                             </div>
 
-                                            <p class="card-text text-muted"><%= recipe.getDescriptionExcerpt() %></p>
-                                            <p><strong>Catégorie :</strong> <%= (new Category().findById(recipe.getIdCategory())).getName() %></p>
-                                            <p><strong>Préparation :</strong> <%= recipe.getHumanFormattedCookTime() %></p>
-                                            <p><strong>Parfum :</strong> <%= (new Perfume().findById(recipe.getIdPerfume())).getName() %></p>
-                                            <p><strong>Prix :</strong> <%= recipe.getPrice() %> €</p>
-                                            <p><strong>Créé par :</strong> <%= recipe.getCreatedBy() %></p>
-                                            <p><strong>Le</strong> <%= recipe.getHumanFormattedCreatedDate() %></p>
+                                            <p class="card-text text-muted"><%= Html.esc(recipe.getDescriptionExcerpt()) %></p>
+                                            <p><strong>Catégorie :</strong> <%= Html.esc((new Category().findById(recipe.getIdCategory())).getName()) %></p>
+                                            <p><strong>Préparation :</strong> <%= Html.esc(recipe.getHumanFormattedCookTime()) %></p>
+                                            <p><strong>Parfum :</strong> <%= Html.esc((new Perfume().findById(recipe.getIdPerfume())).getName()) %></p>
+                                            <p><strong>Prix :</strong> <%= Html.esc(recipe.getPrice()) %> €</p>
+                                            <p><strong>Créé par :</strong> <%= Html.esc(recipe.getCreatedBy()) %></p>
+                                            <p><strong>Le</strong> <%= Html.esc(recipe.getHumanFormattedCreatedDate()) %></p>
 
                                             <div class="mt-auto d-flex justify-content-between">
                                                 <!-- Bouton Détails -->
-                                                <a href="recipe-details?idRecipe=<%= recipe.getId() %>" type="button"
+                                                <a href="recipe-details?idRecipe=<%= Html.esc(recipe.getId()) %>" type="button"
                                                    class="btn rounded-pill btn-icon btn-outline-primary">
                                                     <span class="tf-icons bx bx-detail"></span>
                                                 </a>
 
                                                 <% if (connected) { %>
                                                 <!-- Boutons Modifier et Supprimer -->
-                                                <a href="form-recipe?action=update&id=<%= recipe.getId() %>" type="button"
+                                                <a href="form-recipe?action=update&id=<%= Html.esc(recipe.getId()) %>" type="button"
                                                    class="update-btn btn rounded-pill btn-icon btn-outline-secondary">
                                                     <span class="tf-icons bx bx-edit"></span>
                                                 </a>
-                                                <a href="recipe?action=delete&id=<%= recipe.getId() %>" type="button"
+                                                <a href="recipe?action=delete&id=<%= Html.esc(recipe.getId()) %>" type="button"
                                                    class="delete-btn btn rounded-pill btn-icon btn-outline-danger">
                                                     <span class="tf-icons bx bx-trash"></span>
                                                 </a>

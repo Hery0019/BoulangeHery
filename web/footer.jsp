@@ -1,4 +1,5 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
+<%@ page import="util.Html" %>
 
 <!-- Core JS -->
 <!-- build:js assets/vendor/js/core.js -->

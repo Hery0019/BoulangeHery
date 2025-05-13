@@ -1,4 +1,5 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
+<%@ page import="util.Html" %>
 <%@ page import="dao.Category, java.util.ArrayList, util.SessionUtils" %>
 <% boolean connected = SessionUtils.isUserConnected(request); %>
 
@@ -48,7 +49,7 @@
                         <% if (request.getAttribute("errorMessage") != null) { %>
                         <div class="card-body pb-0">
                             <div class="alert alert-danger alert-dismissible mb-0" role="alert">
-                                <%= request.getAttribute("errorMessage") %>
+                                <%= Html.esc(request.getAttribute("errorMessage")) %>
                                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                             </div>
                         </div>
@@ -71,9 +72,9 @@
                                 <tbody class="table-border-bottom-0">
                                 <% for (Category category : (ArrayList<Category>) request.getAttribute("categories")) { %>
                                 <tr>
-                                    <td><strong><%= category.getId() %>
+                                    <td><strong><%= Html.esc(category.getId()) %>
                                     </strong></td>
-                                    <td><%= category.getName() %>
+                                    <td><%= Html.esc(category.getName()) %>
                                     </td>
                                     <% if (connected) { %>
                                     <td>
@@ -84,12 +85,12 @@
                                             </button>
                                             <div class="dropdown-menu">
                                                 <a class="dropdown-item"
-                                                   href="form-category?action=update&id=<%= category.getId() %>">
+                                                   href="form-category?action=update&id=<%= Html.esc(category.getId()) %>">
                                                     <i class="bx bx-edit-alt me-1"></i>
                                                     Modifier
                                                 </a>
                                                 <a class="dropdown-item"
-                                                   href="category?action=delete&id=<%= category.getId() %>">
+                                                   href="category?action=delete&id=<%= Html.esc(category.getId()) %>">
                                                     <i class="bx bx-trash me-1"></i>
                                                     Supprimer
                                                 </a>

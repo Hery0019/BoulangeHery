@@ -1,4 +1,5 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
+<%@ page import="util.Html" %>
 <%@ page import="dao.Step, dao.Recipe, java.util.ArrayList, util.SessionUtils" %>
 <% boolean connected = SessionUtils.isUserConnected(request); %>
 
@@ -62,8 +63,8 @@
                                                     aria-label="Utilisateur">
                                                 <option selected value="0">Toutes les recettes</option>
                                                 <% for (Recipe recipe : (ArrayList<Recipe>) request.getAttribute("recipes")) { %>
-                                                <option value="<%= recipe.getId() %>">
-                                                    <%= recipe.getTitle() %>
+                                                <option value="<%= Html.esc(recipe.getId()) %>">
+                                                    <%= Html.esc(recipe.getTitle()) %>
                                                 </option>
                                                 <% } %>
                                             </select>
@@ -132,13 +133,13 @@
                                 <tbody class="table-border-bottom-0">
                                 <% for (Step step : (ArrayList<Step>) request.getAttribute("steps")) { %>
                                 <tr>
-                                    <td><strong><%= step.getId() %>
+                                    <td><strong><%= Html.esc(step.getId()) %>
                                     </strong></td>
-                                    <td><%= step.getIdRecipe() %>
+                                    <td><%= Html.esc(step.getIdRecipe()) %>
                                     </td>
-                                    <td><%= step.getNumber() %>
+                                    <td><%= Html.esc(step.getNumber()) %>
                                     </td>
-                                    <td><%= step.getInstructionExcerpt() %>
+                                    <td><%= Html.esc(step.getInstructionExcerpt()) %>
                                     </td>
                                     <% if (connected) { %>
                                     <td>
@@ -149,12 +150,12 @@
                                             </button>
                                             <div class="dropdown-menu">
                                                 <a class="dropdown-item"
-                                                   href="form-step?action=update&id=<%= step.getId() %>">
+                                                   href="form-step?action=update&id=<%= Html.esc(step.getId()) %>">
                                                     <i class="bx bx-edit-alt me-1"></i>
                                                     Modifier
                                                 </a>
                                                 <a class="dropdown-item"
-                                                   href="step?action=delete&id=<%= step.getId() %>">
+                                                   href="step?action=delete&id=<%= Html.esc(step.getId()) %>">
                                                     <i class="bx bx-trash me-1"></i>
                                                     Supprimer
                                                 </a>

@@ -1,4 +1,5 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
+<%@ page import="util.Html" %>
 <%@ page import="dao.Ingredient, java.util.ArrayList, util.SessionUtils" %>
 <%
     boolean connected = SessionUtils.isUserConnected(request);
@@ -111,7 +112,7 @@
                             <% } %>
                             <% if(errorMessage != null) { %>
                             <div class="alert alert-danger alert-dismissible mb-0" role="alert">
-                                <%= errorMessage %>
+                                <%= Html.esc(errorMessage) %>
                                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                             </div>
                             <% } %>
@@ -132,13 +133,13 @@
                                 <tbody class="table-border-bottom-0">
                                 <% for (Ingredient ingredient : (ArrayList<Ingredient>) request.getAttribute("ingredients")) { %>
                                 <tr>
-                                    <td><strong><%= ingredient.getId() %>
+                                    <td><strong><%= Html.esc(ingredient.getId()) %>
                                     </strong></td>
-                                    <td><%= ingredient.getName() %>
+                                    <td><%= Html.esc(ingredient.getName()) %>
                                     </td>
-                                    <td><%= ingredient.getUnit() %>
+                                    <td><%= Html.esc(ingredient.getUnit()) %>
                                     </td>
-                                    <td><%= ingredient.getPrice() %> Ar</td>
+                                    <td><%= Html.esc(ingredient.getPrice()) %> Ar</td>
                                     <% if (connected) { %>
                                     <td>
                                         <div class="dropdown">
@@ -148,12 +149,12 @@
                                             </button>
                                             <div class="dropdown-menu">
                                                 <a class="dropdown-item"
-                                                   href="form-ingredient?action=update&id=<%= ingredient.getId() %>">
+                                                   href="form-ingredient?action=update&id=<%= Html.esc(ingredient.getId()) %>">
                                                     <i class="bx bx-edit-alt me-1"></i>
                                                     Modifier
                                                 </a>
                                                 <a class="dropdown-item"
-                                                   href="ingredient?action=delete&id=<%= ingredient.getId() %>">
+                                                   href="ingredient?action=delete&id=<%= Html.esc(ingredient.getId()) %>">
                                                     <i class="bx bx-trash me-1"></i>
                                                     Supprimer
                                                 </a>
