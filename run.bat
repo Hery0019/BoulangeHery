@@ -1,20 +1,15 @@
-@echo off 
-setlocal enabledelayedexpansion
+@echo off
+setlocal
 
-:: Déclaration des variables
-set "work_dir=D:\ITU\semestre5\baov\projetS5\boulangerie"
-set "tomcat_dir=C:\Program Files\Apache Software Foundation\Tomcat 10.1\bin"
+:: Demarre Tomcat (CATALINA_HOME) et ouvre l'application dans le navigateur.
+:: La configuration de la base (BOULANGERIE_DB_URL / _USER / _PASSWORD) doit
+:: etre dans l'environnement de Tomcat, par exemple via %CATALINA_HOME%\bin\setenv.bat.
+if not defined CATALINA_HOME (
+    echo Definir CATALINA_HOME ^(dossier de Tomcat^).
+    exit /b 1
+)
 
-:: Lancer Tomcat
-cd /d "%tomcat_dir%"
-call catalina.bat start
+call "%CATALINA_HOME%\bin\catalina.bat" start
+start "" http://localhost:8080/boulangerie/
 
-:: Ouvrir Microsoft Edge à l'adresse localhost:8080
-start msedge:http://localhost:8080
-@REM start chrome:http://localhost:8080
-
-:: Revenir au dossier work_dir
-cd /d "%work_dir%"
-
-echo Microsoft Edge ouvert à l'adresse localhost:8080.
-pause
+endlocal
