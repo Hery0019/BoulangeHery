@@ -8,25 +8,27 @@ Stack : Java 21, Jakarta Servlet 6 / JSP sur Apache Tomcat 10.1, PostgreSQL ≥ 
 
 ## Configuration
 
-L'application ne contient aucun identifiant : la base est décrite par
-l'environnement de la JVM (Tomcat ou outil en ligne de commande).
+L'application ne contient aucun identifiant. La base est décrite par trois
+valeurs, lues comme propriétés système de la JVM (`-D…`, prioritaires) ou
+comme variables d'environnement :
 
-| Variable | Exemple |
-|---|---|
-| `BOULANGERIE_DB_URL` | `jdbc:postgresql://localhost:5432/gotta_taste` |
-| `BOULANGERIE_DB_USER` | `boulangerie_app` (rôle dédié, pas `postgres`) |
-| `BOULANGERIE_DB_PASSWORD` | — |
+| Propriété système | Variable d'environnement | Exemple |
+|---|---|---|
+| `boulangerie.db.url` | `BOULANGERIE_DB_URL` | `jdbc:postgresql://localhost:5432/gotta_taste` |
+| `boulangerie.db.user` | `BOULANGERIE_DB_USER` | `boulangerie_app` (rôle dédié, pas `postgres`) |
+| `boulangerie.db.password` | `BOULANGERIE_DB_PASSWORD` | — |
 
-Les propriétés système `boulangerie.db.url|user|password` (`-D…`) ont priorité.
-Sous Tomcat, le plus simple est un fichier `%CATALINA_HOME%\bin\setenv.bat` :
+**Sous Tomcat**, les connexions viennent du pool JNDI `jdbc/boulangerie`
+déclaré dans `web/META-INF/context.xml` ; ses valeurs `${boulangerie.db.*}`
+sont substituées par Tomcat depuis les propriétés système. Les définir dans
+`%CATALINA_HOME%\bin\setenv.bat` (fichier à ne pas versionner) :
 
 ```bat
-set "BOULANGERIE_DB_URL=jdbc:postgresql://localhost:5432/gotta_taste"
-set "BOULANGERIE_DB_USER=boulangerie_app"
-set "BOULANGERIE_DB_PASSWORD=..."
+set "CATALINA_OPTS=-Dboulangerie.db.url=jdbc:postgresql://localhost:5432/gotta_taste -Dboulangerie.db.user=boulangerie_app -Dboulangerie.db.password=..."
 ```
 
-Ce fichier ne doit pas être versionné.
+**Hors Tomcat** (outils `tools.UserAdmin`, tests), `DBConnection` se rabat sur
+`DriverManager` avec les mêmes propriétés ou les variables d'environnement.
 
 ## Base de données
 
@@ -60,8 +62,8 @@ java -cp "temp\WEB-INF\classes;lib\*" tools.UserAdmin create <prénom> <nom> <em
 java -cp "temp\WEB-INF\classes;lib\*" tools.UserAdmin rehash
 ```
 
-(`temp\WEB-INF\classes` est produit par `deploy.bat` ; les variables
-d'environnement ci-dessus doivent être définies.)
+(`temp\WEB-INF\classes` est produit par `deploy.bat` ; la configuration
+ci-dessus doit être dans l'environnement.)
 
 Les données de démonstration (`3-data.sql`) créent trois comptes dont les mots
 de passe sont indiqués en commentaire dans le script : à ne pas utiliser en
@@ -83,6 +85,6 @@ run.bat         # démarre Tomcat et ouvre http://localhost:8080/boulangerie/
 - `src/servlet` — points d'entrée HTTP (`XxxServlet` = liste/mutation, `FormXxxServlet` = formulaire), filtres `AuthFilter` et `ErrorFilter`
 - `src/util` — paramètres de requête, session, échappement HTML, hachage
 - `src/tools` — outils en ligne de commande
-- `web/` — JSP et ressources statiques ; `web.xml` — mappings, filtres, pages d'erreur
+- `web/` — JSP et ressources statiques ; `web/META-INF/context.xml` — pool JDBC ; `web.xml` — mappings, filtres, pages d'erreur
 - `sql/` — schéma, triggers, données de démo, migrations
 - `aleas/` — journal des changements de spécification

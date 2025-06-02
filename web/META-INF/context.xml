@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Contexte Tomcat de l'application (empaqueté dans le WAR).
+
+  Pool de connexions JDBC géré par Tomcat (DBCP2 embarqué, aucune bibliothèque
+  supplémentaire). Les valeurs ${...} sont substituées par Tomcat depuis les
+  propriétés système de la JVM, à définir dans %CATALINA_HOME%\bin\setenv.bat :
+
+      set "CATALINA_OPTS=-Dboulangerie.db.url=jdbc:postgresql://localhost:5432/gotta_taste
+                         -Dboulangerie.db.user=boulangerie_app -Dboulangerie.db.password=..."
+
+  Aucun identifiant ne doit être écrit dans ce fichier.
+-->
+<Context>
+
+    <Resource name="jdbc/boulangerie"
+              auth="Container"
+              type="javax.sql.DataSource"
+              driverClassName="org.postgresql.Driver"
+              url="${boulangerie.db.url}"
+              username="${boulangerie.db.user}"
+              password="${boulangerie.db.password}"
+              initialSize="2"
+              minIdle="2"
+              maxIdle="8"
+              maxTotal="20"
+              maxWaitMillis="5000"
+              validationQuery="SELECT 1"
+              testOnBorrow="true"
+              removeAbandonedOnBorrow="true"
+              removeAbandonedTimeout="60"
+              logAbandoned="true"/>
+
+</Context>
