@@ -54,7 +54,6 @@
                                         <input type="hidden" name="action"
                                                value="<%= Html.esc(request.getAttribute("action")) %>">
                                         <input type="hidden" name="idReview" value="<%= Html.esc(review.getId()) %>">
-                                        <input type="hidden" name="reviewIdUser" value="3">
                                         <div class="mb-3">
                                             <label for="reviewIdRecipe" class="form-label">Plat</label>
                                             <select name="reviewIdRecipe" id="reviewIdRecipe" class="form-select" required>

@@ -10,11 +10,13 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import dao.BusinessRuleException;
 import dao.Category;
 import dao.Recipe;
 import dao.RecipeSell;
 import dao.User;
 import dao.Vendeur;
+import util.BadRequestException;
 import util.Params;
 
 public class RecipeSellServlet extends HttpServlet {
@@ -66,7 +68,7 @@ public class RecipeSellServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
-        String action = req.getParameter("action");
+        boolean update = "update".equals(req.getParameter("action"));
         int id = Params.intValue(req, "idRecipeSell", 0);
         int idRecipe = Params.requiredInt(req, "idRecipe");
         int idVendeur = Params.requiredInt(req, "recipeSellerId");
@@ -75,15 +77,14 @@ public class RecipeSellServlet extends HttpServlet {
         double argent = Params.requiredDouble(req, "recipeSellArgent");
         LocalDate sellDate = Params.requiredDate(req, "recipeSellDate");
 
-        Recipe recipe;
         int idCategory;
         try {
-            recipe = Recipe.findById(idRecipe);
+            Recipe recipe = Recipe.findById(idRecipe);
             if (recipe == null) {
-                throw new util.BadRequestException("Recette inconnue : " + idRecipe);
+                throw new BadRequestException("Recette inconnue : " + idRecipe);
             }
             idCategory = recipe.getIdCategory();
-        } catch (util.BadRequestException e) {
+        } catch (BadRequestException e) {
             throw e;
         } catch (Exception e) {
             throw new ServletException(e);
@@ -94,13 +95,22 @@ public class RecipeSellServlet extends HttpServlet {
                 sellDate);
 
         try {
-            if ("update".equals(action)) {
+            if (update) {
                 recipeSell.update();
-            } else if ("create".equals(action)) {
+            } else {
                 recipeSell.create();
             }
         } catch (Exception e) {
-            resp.sendRedirect("form-recipe-sell.jsp?error=true");
+            BusinessRuleException rule = BusinessRuleException.from(e);
+            if (rule == null) {
+                throw new ServletException(e);
+            }
+            // Règle métier refusée (stock, montant...) : on ré-affiche le formulaire
+            // avec les valeurs saisies et le message.
+            req.setAttribute("errorMessage", rule.getMessage());
+            req.setAttribute("submitted", recipeSell);
+            String target = update ? "form-recipe-sell?action=update&id=" + id : "form-recipe-sell";
+            req.getRequestDispatcher(target).forward(req, resp);
             return;
         }
 

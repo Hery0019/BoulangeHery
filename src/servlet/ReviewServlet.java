@@ -14,6 +14,7 @@ import dao.Recipe;
 import dao.Review;
 import dao.User;
 import util.Params;
+import util.SessionUtils;
 
 public class ReviewServlet extends HttpServlet {
 
@@ -56,7 +57,8 @@ public class ReviewServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
         String action = req.getParameter("action");
         int id = Params.intValue(req, "idReview", 0);
-        int idUser = Params.requiredInt(req, "reviewIdUser");
+        // L'auteur est l'utilisateur connecté, jamais un champ du formulaire (ignoré à la modification)
+        int idUser = SessionUtils.getConnectedUser(req).getId();
         int idRecipe = Params.requiredInt(req, "reviewIdRecipe");
         int rating = Params.requiredInt(req, "reviewRating");
         String comment = Params.string(req, "reviewComment", "");

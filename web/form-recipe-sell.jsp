@@ -1,12 +1,11 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ page import="util.Html" %>
-<%@ page import="dao.Perfume, dao.Recipe, dao.Vendeur, dao.RecipeSell, dao.Category, dao.Perfume, dao.User, java.util.ArrayList, util.SessionUtils" %>
-
+<%@ page import="dao.Recipe, dao.Vendeur, dao.RecipeSell, dao.User, java.util.ArrayList, util.SessionUtils" %>
 <%
-try {
     boolean connected = SessionUtils.isUserConnected(request);
     RecipeSell recipeSell = (RecipeSell) request.getAttribute("recipeSell");
-    String error = request.getParameter("error");
+    String errorMessage = (String) request.getAttribute("errorMessage");
+    boolean creating = "create".equals(request.getAttribute("action"));
 %>
 
 <%@include file="header.jsp"%>
@@ -49,6 +48,12 @@ try {
                                 </div>
                                 <div class="card-body">
                                     <form method="POST" action="recipe-sell">
+                                        <% if (errorMessage != null) { %>
+                                        <div class="alert alert-danger alert-dismissible" role="alert">
+                                            <%= Html.esc(errorMessage) %>
+                                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                        </div>
+                                        <% } %>
                                         <input type="hidden" name="action" value="<%= Html.esc(request.getAttribute("action")) %>">
                                         <input type="hidden" name="idRecipeSell" value="<%= Html.esc(recipeSell.getId()) %>">
 
@@ -87,12 +92,12 @@ try {
 
                                         <div class="mb-3">
                                             <label class="form-label" for="recipeSellCombien">Combien</label>
-                                            <input value="<%= Html.esc(recipeSell.getCombien()) %>" name="recipeSellCombien" type="number" class="form-control" id="recipeSellCombien" placeholder="Combien" required />
+                                            <input value="<%= Html.esc(recipeSell.getCombien()) %>" name="recipeSellCombien" type="number" min="1" class="form-control" id="recipeSellCombien" placeholder="Combien" required />
                                         </div>
 
                                         <div class="mb-3">
                                             <label class="form-label" for="recipeSellArgent">Argent</label>
-                                            <input value="<%= Html.esc(recipeSell.getArgent()) %>" name="recipeSellArgent" type="number" class="form-control" id="recipeSellArgent" placeholder="Argent" required />
+                                            <input value="<%= Html.esc(recipeSell.getArgent()) %>" name="recipeSellArgent" type="number" min="0" step="0.01" class="form-control" id="recipeSellArgent" placeholder="Argent" required />
                                         </div>
 
                                         <div class="mb-3">
@@ -100,7 +105,7 @@ try {
                                             <input value="<%= Html.esc(recipeSell.getFormattedCreatedDate()) %>" name="recipeSellDate" type="date" class="form-control" id="recipeSellDate" required />
                                         </div>
 
-                                        <% if (request.getAttribute("action").equals("create")) { %>
+                                        <% if (creating) { %>
                                         <button type="submit" class="btn btn-success">Ajouter</button>
                                         <% } else { %>
                                         <button type="submit" class="btn btn-primary">Modifier</button>
@@ -119,17 +124,5 @@ try {
     </div>
 </div>
 <!-- / Layout wrapper -->
-
-
-<%
-} catch (Exception e) {
-    out.println("<div class='alert alert-danger'>Une erreur est survenue : " + e.getMessage() + "</div>"); %>
-     <div class="alert alert-danger alert-dismissible">
-        Argent insuffisant
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-<%
-}
-%>
 
 <%@include file="footer.jsp" %>

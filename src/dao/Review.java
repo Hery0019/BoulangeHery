@@ -276,14 +276,13 @@ public class Review {
             connection.setAutoCommit(false);
             statement = connection.prepareStatement(
                 "UPDATE review"
-                + " SET id_user = ?, id_recipe = ?, rating = ?, comment = ?"
+                + " SET id_recipe = ?, rating = ?, comment = ?" // l'auteur (id_user) ne change jamais
                 + " WHERE id_review = ?"
             );
-            statement.setInt(1, idUser);
-            statement.setInt(2, idRecipe);
-            statement.setInt(3, rating);
-            statement.setString(4, comment);
-            statement.setInt(5, id);
+            statement.setInt(1, idRecipe);
+            statement.setInt(2, rating);
+            statement.setString(3, comment);
+            statement.setInt(4, id);
             statement.executeUpdate();
             connection.commit();
         } catch (Exception e) {

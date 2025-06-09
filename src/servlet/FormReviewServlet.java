@@ -43,7 +43,6 @@ public class FormReviewServlet extends HttpServlet {
             }
         } else {
             action = "create";
-            review.setIdUser(SessionUtils.getConnectedUser(req).getId());
         }
 
         req.setAttribute("action", action);
