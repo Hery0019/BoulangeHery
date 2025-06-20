@@ -2,6 +2,7 @@
 <%@ page import="util.Html" %>
 <%@ page import="dao.Recipe, dao.Step, java.util.ArrayList, util.SessionUtils" %>
 <%@ page import="dao.RecipeIngredient" %>
+<%@ page import="dao.RecipeStock" %>
 <%
     boolean connected = SessionUtils.isUserConnected(request);
     Recipe recipe = (Recipe) request.getAttribute("recipe");
@@ -65,6 +66,26 @@
                             </p>
                         </div>
                     </div>
+
+                    <!-- Stock -->
+                    <div class="card mb-3">
+                        <h5 class="card-header">Stock</h5>
+                        <div class="card-body">
+                            <% RecipeStock stock = (RecipeStock) request.getAttribute("stock"); %>
+                            <p class="mb-2">Quantité disponible : <span class="fw-bold"><%= stock == null ? "non défini" : Html.esc(stock.getReste()) %></span></p>
+                            <% if (connected) { %>
+                            <form method="POST" action="recipe-stock" class="row g-2 align-items-end">
+                                <input type="hidden" name="idRecipe" value="<%= Html.esc(recipe.getId()) %>">
+                                <div class="col-auto">
+                                    <label class="form-label" for="stockQuantity">Approvisionner</label>
+                                    <input name="quantity" id="stockQuantity" type="number" min="1" class="form-control" placeholder="Quantité" required>
+                                </div>
+                                <div class="col-auto"><button type="submit" class="btn btn-success">Ajouter au stock</button></div>
+                            </form>
+                            <% } %>
+                        </div>
+                    </div>
+                    <!--/ Stock -->
 
                     <!-- Recipe's ingredients table -->
                     <div class="card mb-3">

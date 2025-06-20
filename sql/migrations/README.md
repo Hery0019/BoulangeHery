@@ -12,3 +12,4 @@
 | 002 | Politiques ON DELETE (CASCADE composants de recette, RESTRICT ailleurs) |
 | 003 | Historique des prix daté du jour du changement |
 | 004 | Mots de passe hachés (élargissement de la colonne + `tools.UserAdmin rehash`) |
+| 005 | Stock unique par recette et créé avec elle, ventes modifiables/supprimables sans fausser stock ni commissions, cook_time à la suppression d'étape |

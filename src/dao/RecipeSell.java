@@ -188,16 +188,16 @@ public class RecipeSell {
             connection.setAutoCommit(false);
             statement = connection.prepareStatement(
                     "UPDATE recipe_sell"
-                            + " SET id_recipe = ?, id_category = ?, id_user = ?, combien = ?, argent = ?, reste = ?, sell_date = ?"
+                            + " SET id_vendeur = ?, id_recipe = ?, id_category = ?, id_user = ?, combien = ?, argent = ?, sell_date = ?"
                             + " WHERE id_recipe_sell = ?");
-            statement.setInt(1, idRecipe);
-            statement.setInt(2, idCategory);
-            statement.setInt(3, idUser);
-            statement.setDouble(4, combien);
-            statement.setDouble(5, argent);
-            statement.setDouble(6, 0.0); // calculer a partir du trigger
+            statement.setInt(1, idVendeur);
+            statement.setInt(2, idRecipe);
+            statement.setInt(3, idCategory);
+            statement.setInt(4, idUser);
+            statement.setInt(5, combien);
+            statement.setDouble(6, argent);
             statement.setDate(7, Date.valueOf(sellDate));
-            statement.setInt(8, id);
+            statement.setInt(8, id); // reste est recalculé par le trigger calculate_reste
             statement.executeUpdate();
             connection.commit();
         } catch (Exception e) {

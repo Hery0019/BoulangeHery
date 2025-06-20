@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import dao.Recipe;
 import dao.RecipeIngredient;
+import dao.RecipeStock;
 import dao.Step;
 import util.Params;
 
@@ -31,10 +32,12 @@ public class RecipeDetailsServlet extends HttpServlet {
             }
             ArrayList<Step> steps = Step.search(idRecipe, 0, 0, minCookTime, maxCookTime, "");
             ArrayList<RecipeIngredient> recipeIngredients = RecipeIngredient.search(idRecipe);
+            RecipeStock stock = RecipeStock.findByRecipe(idRecipe);
 
             req.setAttribute("recipe", recipe);
             req.setAttribute("steps", steps);
             req.setAttribute("recipeIngredients", recipeIngredients);
+            req.setAttribute("stock", stock);
             req.setAttribute("activeMenuItem", "recipe");
             req.setAttribute("pageTitle", "Recette");
 

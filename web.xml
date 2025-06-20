@@ -144,6 +144,11 @@
     <servlet-name>RecipePriceHistoryServlet</servlet-name>
   </servlet>
 
+  <servlet>
+    <servlet-class>servlet.RecipeStockServlet</servlet-class>
+    <servlet-name>RecipeStockServlet</servlet-name>
+  </servlet>
+
 
 
   <!-- Servlet mapping -->
@@ -240,6 +245,11 @@
   <servlet-mapping>
     <servlet-name>RecipePriceHistoryServlet</servlet-name>
     <url-pattern>/recipe-price-history</url-pattern>
+  </servlet-mapping>
+
+  <servlet-mapping>
+    <servlet-name>RecipeStockServlet</servlet-name>
+    <url-pattern>/recipe-stock</url-pattern>
   </servlet-mapping>
 
   <!-- Pool de connexions déclaré dans META-INF/context.xml -->

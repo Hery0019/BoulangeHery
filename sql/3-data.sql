@@ -5,7 +5,7 @@ TRUNCATE TABLE category, gotta_taste_user, recipe, recipe_ingredient, recipe_sel
 INSERT INTO category (category_name) VALUES
     ('Pains'), ('Viennoiseries'), ('Patisseries');
 
--- Inserer des utilisateurs fictifs
+-- Inserer des utilisateurs fictifs (mots de passe de demo, haches PBKDF2 : pain123, croissant456, 123 -- a changer en production)
 INSERT INTO gotta_taste_user (firstname, lastname, email, user_password) VALUES  
     ('Marie', 'Boulanger', 'marie.boulanger@example.com', 'pbkdf2$210000$OTycqrpaVK0zPG6HrDJvww==$NjP2Vt2WuRER8udXYKsCCVFWU91SKb+j5z7Vgl0s7bo='),
     ('Paul', 'Patissier', 'paul.patissier@example.com', 'pbkdf2$210000$87B9rbI1RcCnFICkzeuHIg==$QX7Wv9FXjMuOT7EwW2cSJ127oX3M0MP9+zUo80C5x7E='),
@@ -122,12 +122,6 @@ INSERT INTO vendeur (firstname, lastname, sexe, email, salary) VALUES
     ('Maya', 'Moore', 'F', 'maya.moore@example.com', 2300.00),
     ('Natasha', 'Angel', 'F', 'nat.ange@example.com', 3200.00);
 
-INSERT INTO recipe_stock (id_recipe, reste) VALUES 
-    (1, 100),
-    (2, 100),
-    (3, 100),
-    (4, 100),
-    (5, 100),
-    (6, 100),
-    (7, 100),
+-- Le stock est cree a 0 par trigger a la creation de chaque recette : approvisionnement de demo
+UPDATE recipe_stock SET reste = 100;
     (8, 100);

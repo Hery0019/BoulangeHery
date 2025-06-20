@@ -1,19 +1,47 @@
-CREATE OR REPLACE FUNCTION update_recipe_cook_time()
-RETURNS TRIGGER AS $$
+-- Triggers de gotta_taste. État courant du schéma : pour une base existante,
+-- appliquer les scripts de sql/migrations/ (voir sql/migrations/README.md).
+--
+-- Règles portées par la base :
+--   * recipe.cook_time        = somme des cook_time des étapes
+--   * recipe_stock            : une ligne par recette, créée avec la recette ; décrémentée
+--                               par les ventes (création / modification / suppression)
+--   * recipe_sell.reste       = argent - combien * prix de la recette
+--   * commission              : calculée à chaque vente selon la règle en vigueur à la date de vente
+--   * recipe_price_history    : une ligne par changement de prix
+-- Les refus (stock insuffisant...) sont des RAISE EXCEPTION dont le message est
+-- affiché tel quel à l'utilisateur (dao.BusinessRuleException).
+
+
+-- ---------------------------------------------------------------------------
+-- Temps de préparation d'une recette = somme des étapes
+-- ---------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION recompute_recipe_cook_time(p_id_recipe INT)
+RETURNS VOID AS $$
 BEGIN
-    -- Mettre à jour le temps de cuisson dans la table recipe
     UPDATE recipe
     SET cook_time = (
         SELECT COALESCE(SUM(cook_time::interval), '00:00:00')::time
         FROM step
-        WHERE step.id_recipe = NEW.id_recipe
+        WHERE step.id_recipe = p_id_recipe
     )
-    WHERE recipe.id_recipe = NEW.id_recipe;
-
-    RETURN NEW;
+    WHERE recipe.id_recipe = p_id_recipe;
 END;
 $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION update_recipe_cook_time()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Sur DELETE, NEW est NULL : on recalcule à partir de OLD (et des deux recettes
+    -- si une étape change de recette).
+    IF TG_OP <> 'DELETE' THEN
+        PERFORM recompute_recipe_cook_time(NEW.id_recipe);
+    END IF;
+    IF TG_OP = 'DELETE' OR (TG_OP = 'UPDATE' AND OLD.id_recipe <> NEW.id_recipe) THEN
+        PERFORM recompute_recipe_cook_time(OLD.id_recipe);
+    END IF;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE TRIGGER trigger_update_cook_time
 AFTER INSERT OR UPDATE OR DELETE
@@ -22,61 +50,110 @@ FOR EACH ROW
 EXECUTE FUNCTION update_recipe_cook_time();
 
 
--- Créer une fonction pour calculer le reste
+-- ---------------------------------------------------------------------------
+-- Stock : une ligne par recette, créée à 0 avec la recette
+-- ---------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION init_recipe_stock()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO recipe_stock (id_recipe, reste)
+    VALUES (NEW.id_recipe, 0)
+    ON CONFLICT (id_recipe) DO NOTHING;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_init_recipe_stock
+AFTER INSERT ON recipe
+FOR EACH ROW
+EXECUTE FUNCTION init_recipe_stock();
+
+
+-- ---------------------------------------------------------------------------
+-- Vente : reste rendu au client
+-- ---------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION calculate_reste()
 RETURNS TRIGGER AS $$
 BEGIN
-    -- Calculer le reste : reste = argent - combien * recipe.price
+    -- reste = argent - combien * recipe.price (CHECK reste >= 0 : argent insuffisant)
     NEW.reste := NEW.argent - NEW.combien * (
-        SELECT price 
-        FROM recipe 
+        SELECT price
+        FROM recipe
         WHERE id_recipe = NEW.id_recipe
     );
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
--- Créer un trigger sur la table recipe_sell
 CREATE OR REPLACE TRIGGER trigger_calculate_reste
 BEFORE INSERT OR UPDATE ON recipe_sell
 FOR EACH ROW
 EXECUTE FUNCTION calculate_reste();
 
 
--- Création de la fonction associée au trigger
+-- ---------------------------------------------------------------------------
+-- Vente : consommation du stock (création, modification, suppression)
+-- ---------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION update_recipe_stock()
 RETURNS TRIGGER AS $$
+DECLARE
+    v_remaining INT;
 BEGIN
-    -- Vérifie si la quantité restante est suffisante
-    IF (SELECT reste FROM recipe_stock WHERE id_recipe = NEW.id_recipe) < NEW.combien THEN
-        RAISE EXCEPTION 'Quantité insuffisante dans le stock pour id_recipe %', NEW.id_recipe;
+    -- Restitution de l'ancienne vente (modification ou suppression)
+    IF TG_OP IN ('UPDATE', 'DELETE') THEN
+        UPDATE recipe_stock
+        SET reste = reste + OLD.combien
+        WHERE id_recipe = OLD.id_recipe;
     END IF;
 
-    -- Mise à jour de la colonne `reste` dans `recipe_stock`
+    IF TG_OP = 'DELETE' THEN
+        RETURN OLD;
+    END IF;
+
+    IF NEW.combien <= 0 THEN
+        RAISE EXCEPTION 'La quantité vendue doit être supérieure à zéro';
+    END IF;
+
+    -- Décrément atomique : la condition reste >= combien est réévaluée sous verrou
+    -- de ligne, deux ventes simultanées ne peuvent pas rendre le stock négatif.
     UPDATE recipe_stock
     SET reste = reste - NEW.combien
-    WHERE id_recipe = NEW.id_recipe;
+    WHERE id_recipe = NEW.id_recipe AND reste >= NEW.combien
+    RETURNING reste INTO v_remaining;
+
+    IF NOT FOUND THEN
+        SELECT reste INTO v_remaining FROM recipe_stock WHERE id_recipe = NEW.id_recipe;
+        IF NOT FOUND THEN
+            RAISE EXCEPTION 'Aucun stock défini pour cette recette : approvisionnez-la avant de la vendre';
+        END IF;
+        RAISE EXCEPTION 'Stock insuffisant : il reste % unité(s) de cette recette', v_remaining;
+    END IF;
 
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
--- Création du trigger
-CREATE TRIGGER trg_update_recipe_stock
-BEFORE INSERT ON recipe_sell
+CREATE OR REPLACE TRIGGER trg_update_recipe_stock
+BEFORE INSERT OR UPDATE OR DELETE ON recipe_sell
 FOR EACH ROW
 EXECUTE FUNCTION update_recipe_stock();
 
 
-
-
--- Fonction déclencheur : commission du vendeur selon la règle en vigueur à la date de vente
+-- ---------------------------------------------------------------------------
+-- Commission du vendeur selon la règle en vigueur à la date de vente
+-- ---------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION calculate_commission()
 RETURNS TRIGGER AS $$
 DECLARE
     v_rule   commission_change%ROWTYPE;
     v_total  DECIMAL(12,2);
 BEGIN
+    -- Une vente modifiée est recalculée ; une vente supprimée emporte sa commission
+    -- (FK commission.id_recipe_sell ON DELETE CASCADE).
+    IF TG_OP = 'UPDATE' THEN
+        DELETE FROM commission WHERE id_recipe_sell = OLD.id_recipe_sell;
+    END IF;
+
     -- Règle la plus récente dont la date est antérieure ou égale à la date de vente
     SELECT * INTO v_rule
     FROM commission_change
@@ -87,42 +164,40 @@ BEGIN
     IF NOT FOUND THEN
         RAISE NOTICE 'Aucune règle de commission applicable au % : vente % sans commission',
             NEW.sell_date, NEW.id_recipe_sell;
-        RETURN NEW;
+        RETURN NULL;
     END IF;
 
     v_total := NEW.combien * (SELECT price FROM recipe WHERE id_recipe = NEW.id_recipe);
 
     IF v_total >= v_rule.commission_change_value THEN
-        INSERT INTO commission (id_vendeur, id_recipe, commission_amount, commission_date)
-        VALUES (NEW.id_vendeur, NEW.id_recipe, v_total * v_rule.percent, NEW.sell_date);
+        INSERT INTO commission (id_recipe_sell, id_vendeur, id_recipe, commission_amount, commission_date)
+        VALUES (NEW.id_recipe_sell, NEW.id_vendeur, NEW.id_recipe, v_total * v_rule.percent, NEW.sell_date);
     END IF;
 
-    RETURN NEW;
+    RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;
 
--- Créer le trigger pour la table recipe_sell
 CREATE OR REPLACE TRIGGER trigger_calculate_commission
-AFTER INSERT ON recipe_sell
+AFTER INSERT OR UPDATE ON recipe_sell
 FOR EACH ROW
 EXECUTE FUNCTION calculate_commission();
 
 
-
-
+-- ---------------------------------------------------------------------------
 -- Historique des prix : une ligne par changement de prix, datée du jour du changement
+-- ---------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION log_price_change()
 RETURNS TRIGGER AS $$
 BEGIN
     INSERT INTO recipe_price_history (id_recipe, price_before, price_after, change_date)
     VALUES (NEW.id_recipe, OLD.price, NEW.price, CURRENT_DATE);
-    RETURN NEW;
+    RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;
 
--- Création du trigger
 CREATE OR REPLACE TRIGGER trg_log_price_change
 AFTER UPDATE OF price ON recipe
 FOR EACH ROW
-WHEN (OLD.price IS DISTINCT FROM NEW.price) -- Ne se déclenche que si le prix change
+WHEN (OLD.price IS DISTINCT FROM NEW.price)
 EXECUTE FUNCTION log_price_change();

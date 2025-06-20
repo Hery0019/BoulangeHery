@@ -46,16 +46,6 @@ CREATE TABLE vendeur (
     salary DECIMAL(10,2) NOT NULL
 );
 
-CREATE TABLE commission (
-    id_commission SERIAL PRIMARY KEY,
-    id_vendeur INT NOT NULL,
-    id_recipe INT NOT NULL,
-    commission_amount DECIMAL(10,2) NOT NULL,
-    commission_date DATE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_recipe) REFERENCES recipe(id_recipe) ON DELETE RESTRICT,
-    FOREIGN KEY (id_vendeur) REFERENCES vendeur(id_vendeur) ON DELETE RESTRICT
-);
-
 
 CREATE TABLE commission_change (
     id_commission_change SERIAL PRIMARY KEY,
@@ -116,9 +106,21 @@ CREATE TABLE recipe_sell (
     FOREIGN KEY (id_user) REFERENCES gotta_taste_user(id_user) ON DELETE RESTRICT
 );
 
+CREATE TABLE commission (
+    id_commission SERIAL PRIMARY KEY,
+    id_recipe_sell INT, -- vente d'origine (NULL pour les commissions antérieures à la migration 005)
+    id_vendeur INT NOT NULL,
+    id_recipe INT NOT NULL,
+    commission_amount DECIMAL(10,2) NOT NULL,
+    commission_date DATE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_recipe) REFERENCES recipe(id_recipe) ON DELETE RESTRICT,
+    FOREIGN KEY (id_vendeur) REFERENCES vendeur(id_vendeur) ON DELETE RESTRICT,
+    FOREIGN KEY (id_recipe_sell) REFERENCES recipe_sell(id_recipe_sell) ON DELETE CASCADE
+);
+
 CREATE TABLE recipe_stock (
     id_recipe_stock SERIAL PRIMARY KEY,
-    id_recipe INT NOT NULL,
+    id_recipe INT NOT NULL UNIQUE,
     reste INT NOT NULL CHECK (reste >= 0),
     FOREIGN KEY (id_recipe) REFERENCES recipe(id_recipe) ON DELETE CASCADE
 );

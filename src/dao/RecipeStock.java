@@ -1,16 +1,20 @@
 package dao;
 
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.ArrayList;
+import java.sql.SQLException;
 
+/**
+ * Stock d'une recette (recipe_stock) : une ligne par recette, créée à 0 par
+ * trigger à la création de la recette, décrémentée par les ventes (trigger
+ * trg_update_recipe_stock) et alimentée par {@link #add(int, int)}.
+ */
 public class RecipeStock {
 
-    private int id;
-    private int idRecipe = 1;
-    private int reste = 0;
+    private final int id;
+    private final int idRecipe;
+    private final int reste;
 
     public RecipeStock(int id, int idRecipe, int reste) {
         this.id = id;
@@ -18,158 +22,49 @@ public class RecipeStock {
         this.reste = reste;
     }
 
-
-    public RecipeStock(int idRecipe, int reste) {
-        this.idRecipe = idRecipe;
-        this.reste = reste;
-    }
-
-
-    public static ArrayList<RecipeStock> all() throws Exception {
-        ArrayList<RecipeStock> recipeStocks = new ArrayList<RecipeStock>();
-
-        Connection connection = null;
-        PreparedStatement statement = null;
-        ResultSet resultSet = null;
-
-        try {
-            connection = DBConnection.getPostgesConnection();
-            statement = connection.prepareStatement(
-                "SELECT * FROM recipe_stock"
-            );
-            resultSet = statement.executeQuery();
-
-            int id;
-            int idRecipe;
-            int reste;
-
-            while (resultSet.next()) {
-                id = resultSet.getInt("id_vendeur");
-                idRecipe = resultSet.getInt("id_recipe");
-                reste = resultSet.getInt("reste");
-
-                recipeStocks.add(
-                    new RecipeStock(id, idRecipe, reste)
-                );
-            }
-        } catch (Exception e) {
-            throw e;
-        } finally {
-            if (resultSet != null) {
-                resultSet.close();
-            }
-            if (statement != null) {
-                statement.close();
-            }
-            if (connection != null) {
-                connection.close();
+    /** Stock de la recette, ou {@code null} si aucune ligne n'existe (base antérieure à la migration 005). */
+    public static RecipeStock findByRecipe(int idRecipe) throws SQLException {
+        try (Connection connection = DBConnection.getPostgesConnection();
+                PreparedStatement statement = connection.prepareStatement(
+                        "SELECT id_recipe_stock, id_recipe, reste FROM recipe_stock WHERE id_recipe = ?")) {
+            statement.setInt(1, idRecipe);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    return new RecipeStock(
+                            resultSet.getInt("id_recipe_stock"),
+                            resultSet.getInt("id_recipe"),
+                            resultSet.getInt("reste"));
+                }
+                return null;
             }
         }
-
-        return recipeStocks;
     }
 
-
-    // public void create() throws Exception {
-    //     Connection connection = null;
-    //     PreparedStatement statement = null;
-    //     try {
-    //         connection = DBConnection.getPostgesConnection();
-    //         connection.setAutoCommit(false);
-    //         statement = connection.prepareStatement(
-    //             "INSERT INTO gotta_taste_user(firstname, lastname, email, user_password)"
-    //             + " VALUES (?, ?, ?, ?)"
-    //         );
-    //         statement.setString(1, this.firstname);
-    //         statement.setString(2, this.lastname);
-    //         statement.setString(3, this.email);
-    //         statement.setString(4, this.password);
-    //         statement.execute();
-    //         connection.commit();
-    //     } catch (Exception e) {
-    //         connection.rollback();
-    //         throw e;
-    //     } finally {
-    //         statement.close();
-    //         connection.close();
-    //     }
-    // }
-
-    // public void findByEmailAndPassword() throws Exception {
-    //     Connection connection = null;
-    //     PreparedStatement statement = null;
-    //     ResultSet resultSet = null;
-
-    //     try {
-    //         connection = DBConnection.getPostgesConnection();
-    //         statement = connection.prepareStatement(
-    //             "SELECT * FROM gotta_taste_user"
-    //             + " WHERE email = ? AND user_password = ?"
-    //         );
-    //         statement.setString(1, this.email);
-    //         statement.setString(2, this.password);
-    //         resultSet = statement.executeQuery();
-
-    //         while (resultSet.next()) {
-    //             id = resultSet.getInt("id_user");
-    //             firstname = resultSet.getString("firstname");
-    //             lastname = resultSet.getString("lastname");
-    //         }
-    //     } catch (Exception e) {
-    //         throw e;
-    //     } finally {
-    //         if (resultSet != null) {
-    //             resultSet.close();
-    //         }
-    //         if (statement != null) {
-    //             statement.close();
-    //         }
-    //         if (connection != null) {
-    //             connection.close();
-    //         }
-    //     }
-    // }
-
-    // private String hashPassword(String password) {
-    //     MessageDigest md = null;
-    //     byte[] hash = null;
-
-    //     try {
-    //         md = MessageDigest.getInstance("SHA-256");
-    //         hash = md.digest(password.getBytes());
-    //     } catch (NoSuchAlgorithmException e) {
-    //         e.printStackTrace();
-    //     }
-
-    //     StringBuilder sb = new StringBuilder();
-    //     for (byte b : hash) {
-    //         sb.append(String.format("%02x", b));
-    //     }
-    //     return sb.toString();
-    // }
+    /** Approvisionnement : ajoute {@code quantity} (&gt; 0) au stock, en créant la ligne si besoin. */
+    public static void add(int idRecipe, int quantity) throws SQLException {
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("La quantité à ajouter doit être supérieure à zéro");
+        }
+        try (Connection connection = DBConnection.getPostgesConnection();
+                PreparedStatement statement = connection.prepareStatement(
+                        "INSERT INTO recipe_stock (id_recipe, reste) VALUES (?, ?)"
+                                + " ON CONFLICT (id_recipe) DO UPDATE SET reste = recipe_stock.reste + EXCLUDED.reste")) {
+            statement.setInt(1, idRecipe);
+            statement.setInt(2, quantity);
+            statement.executeUpdate();
+        }
+    }
 
     public int getId() {
         return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public int getIdRecipe() {
         return idRecipe;
     }
 
-    public void setIdRecipe(int idRecipe) {
-        this.idRecipe = idRecipe;
-    }
-
     public int getReste() {
         return reste;
-    }
-
-    public void setReste(int reste) {
-        this.reste = reste;
     }
 
 }
