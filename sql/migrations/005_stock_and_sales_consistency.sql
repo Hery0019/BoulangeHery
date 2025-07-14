@@ -3,7 +3,7 @@
 --     décrément atomique ; modification/suppression d'une vente restitue le stock.
 --   * commission liée à sa vente (id_recipe_sell, ON DELETE CASCADE) et recalculée si la vente change.
 --   * cook_time recalculé aussi à la suppression d'une étape.
--- Rejouable. Exécuter avec psql (le ir final recharge sql/2-trigger.sql, chemin relatif à ce fichier).
+-- Rejouable. Exécuter avec psql (le \ir final recharge sql/2-trigger.sql, chemin relatif à ce fichier).
 -- Ce script ajoute les changements de schéma, 2-trigger.sql porte les fonctions.
 
 -- Doublons éventuels de stock : on garde la ligne la plus ancienne
@@ -27,4 +27,4 @@ ALTER TABLE commission ADD COLUMN IF NOT EXISTS id_recipe_sell INT
     REFERENCES recipe_sell(id_recipe_sell) ON DELETE CASCADE;
 
 -- Fonctions et triggers : même contenu que sql/2-trigger.sql
-\i 2-trigger.sql
+\ir ../2-trigger.sql
