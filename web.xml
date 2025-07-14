@@ -252,6 +252,16 @@
     <url-pattern>/recipe-stock</url-pattern>
   </servlet-mapping>
 
+  <!-- Sessions : expiration après 30 min d'inactivité, cookie inaccessible au JavaScript.
+       Passer <secure>true</secure> dès que l'application est servie en HTTPS. -->
+  <session-config>
+    <session-timeout>30</session-timeout>
+    <cookie-config>
+      <http-only>true</http-only>
+    </cookie-config>
+    <tracking-mode>COOKIE</tracking-mode>
+  </session-config>
+
   <!-- Pool de connexions déclaré dans META-INF/context.xml -->
   <resource-ref>
     <res-ref-name>jdbc/boulangerie</res-ref-name>

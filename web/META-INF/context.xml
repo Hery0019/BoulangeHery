@@ -13,6 +13,10 @@
 -->
 <Context>
 
+    <!-- Cookies (dont JSESSIONID) limités aux navigations de même site : un formulaire
+         ou une image sur un site tiers n'emporte pas la session (complément du jeton CSRF). -->
+    <CookieProcessor sameSiteCookies="lax"/>
+
     <Resource name="jdbc/boulangerie"
               auth="Container"
               type="javax.sql.DataSource"
