@@ -14,18 +14,24 @@ import util.SessionUtils;
 
 public class LoginServlet extends HttpServlet {
 
-    /** Déconnexion : la session est détruite, pas seulement vidée de l'utilisateur. */
+    /** GET /login n'a aucun effet : la déconnexion se fait en POST (action=logout). */
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        HttpSession session = req.getSession(false);
-        if (session != null) {
-            session.invalidate();
-        }
-        resp.sendRedirect("recipe");
+        resp.sendRedirect("form-login");
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        if ("logout".equals(req.getParameter("action"))) {
+            // Déconnexion : la session est détruite, pas seulement vidée de l'utilisateur.
+            HttpSession session = req.getSession(false);
+            if (session != null) {
+                session.invalidate();
+            }
+            resp.sendRedirect("recipe");
+            return;
+        }
+
         String email = Params.requiredString(req, "userEmail");
         String password = Params.requiredString(req, "userPassword");
         try {

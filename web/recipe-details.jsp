@@ -1,5 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ page import="util.Html" %>
+<%@ page import="util.Csrf" %>
 <%@ page import="dao.Recipe, dao.Step, java.util.ArrayList, util.SessionUtils" %>
 <%@ page import="dao.RecipeIngredient" %>
 <%@ page import="dao.RecipeStock" %>
@@ -75,6 +76,7 @@
                             <p class="mb-2">Quantité disponible : <span class="fw-bold"><%= stock == null ? "non défini" : Html.esc(stock.getReste()) %></span></p>
                             <% if (connected) { %>
                             <form method="POST" action="recipe-stock" class="row g-2 align-items-end">
+                                <input type="hidden" name="_csrf" value="<%= Html.esc(Csrf.token(request)) %>">
                                 <input type="hidden" name="idRecipe" value="<%= Html.esc(recipe.getId()) %>">
                                 <div class="col-auto">
                                     <label class="form-label" for="stockQuantity">Approvisionner</label>
@@ -128,11 +130,12 @@
                                                     <i class="bx bx-edit-alt me-1"></i>
                                                     Modifier
                                                 </a>
-                                                <a class="dropdown-item"
-                                                   href="recipe-ingredient?action=delete&idRecipe=<%= Html.esc(recipeIngredient.getIdRecipe()) %>&idIngredient=<%= Html.esc(recipeIngredient.getIdIngredient()) %>">
-                                                    <i class="bx bx-trash me-1"></i>
-                                                    Supprimer
-                                                </a>
+                                                <form method="POST" action="recipe-ingredient" class="d-inline" onsubmit="return confirm('Confirmer la suppression ?')">
+                                                    <input type="hidden" name="_csrf" value="<%= Html.esc(Csrf.token(request)) %>">
+                                                    <input type="hidden" name="idRecipe" value="<%= Html.esc(recipeIngredient.getIdRecipe()) %>">
+                                                    <input type="hidden" name="idIngredient" value="<%= Html.esc(recipeIngredient.getIdIngredient()) %>">
+                                                    <button type="submit" class="dropdown-item"><i class="bx bx-trash me-1"></i> Supprimer</button>
+                                                </form>
                                             </div>
                                         </div>
                                     </td>
@@ -166,10 +169,11 @@
                                         class="update-btn btn rounded-pill btn-icon btn-outline-secondary me-2">
                                             <span class="tf-icons bx bx-edit"></span>
                                         </a>
-                                        <a href="step?action=delete&id=<%= Html.esc(step.getId()) %>" type="button"
-                                        class="delete-btn btn rounded-pill btn-icon btn-outline-danger">
-                                            <span class="tf-icons bx bx-trash"></span>
-                                        </a>
+                                        <form method="POST" action="step" class="d-inline" onsubmit="return confirm('Confirmer la suppression ?')">
+                                            <input type="hidden" name="_csrf" value="<%= Html.esc(Csrf.token(request)) %>">
+                                            <input type="hidden" name="id" value="<%= Html.esc(step.getId()) %>">
+                                            <button type="submit" class="delete-btn btn rounded-pill btn-icon btn-outline-danger"><span class="tf-icons bx bx-trash"></span></button>
+                                        </form>
                                     </div>
                                     <% } %>
                                 </div>

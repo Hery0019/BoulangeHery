@@ -1,5 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ page import="util.Html" %>
+<%@ page import="util.Csrf" %>
 <%@ page import="dao.Step, dao.Recipe, dao.User, java.util.ArrayList, util.SessionUtils" %>
 <li class="nav-item navbar-dropdown dropdown-user dropdown">
     <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
@@ -29,10 +30,11 @@
         </li>
         <% if (connected) { %>
         <li>
-            <a class="dropdown-item" href="login">
-                <i class="bx bx-log-out me-2"></i>
-                <span class="align-middle">Me déconnecter</span>
-            </a>
+            <form method="POST" action="login" class="d-inline">
+                <input type="hidden" name="_csrf" value="<%= Html.esc(Csrf.token(request)) %>">
+                <input type="hidden" name="action" value="logout">
+                <button type="submit" class="dropdown-item"><i class="bx bx-log-out me-2"></i> <span class="align-middle">Me déconnecter</span></button>
+            </form>
         </li>
         <% } else { %>
         <li>

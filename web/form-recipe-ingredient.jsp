@@ -1,5 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ page import="util.Html" %>
+<%@ page import="util.Csrf" %>
 <%@ page import="java.util.ArrayList" %>
 <%@ page import="dao.Recipe" %>
 <%@ page import="dao.Ingredient" %>
@@ -60,6 +61,7 @@
                                 </div>
                                 <div class="card-body">
                                     <form method="POST" action="recipe-ingredient">
+                                        <input type="hidden" name="_csrf" value="<%= Html.esc(Csrf.token(request)) %>">
                                         <% if(errorMessage != null) { %>
                                         <div class="alert alert-danger alert-dismissible" role="alert">
                                             <%= Html.esc(errorMessage) %>

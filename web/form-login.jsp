@@ -1,4 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
+<%@ page import="util.Html" %>
+<%@ page import="util.Csrf" %>
 <%
     String error = request.getParameter("error");
 %>
@@ -58,6 +60,7 @@
                     <p class="mb-4">Veuillez vous connecter à votre compte</p>
 
                     <form id="formAuthentication" class="mb-3" action="login" method="POST">
+                        <input type="hidden" name="_csrf" value="<%= Html.esc(Csrf.token(request)) %>">
                         <% if ("true".equals(error)) { %>
                         <div class="alert alert-danger alert-dismissible">
                             Identifiants incorrect

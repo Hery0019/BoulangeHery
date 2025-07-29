@@ -21,13 +21,6 @@ public class ReviewServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
-            String action = req.getParameter("action");
-
-            if ("delete".equals(action)) {
-                Review review = new Review(Params.requiredInt(req, "id"));
-                review.delete();
-            }
-
             ArrayList<User> users = User.all();
             ArrayList<Recipe> recipes = Recipe.all();
 
@@ -56,6 +49,18 @@ public class ReviewServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
         String action = req.getParameter("action");
+
+        if ("delete".equals(action)) {
+            Review review = new Review(Params.requiredInt(req, "id"));
+            try {
+                review.delete();
+            } catch (Exception e) {
+                throw new ServletException(e);
+            }
+            resp.sendRedirect("review");
+            return;
+        }
+
         int id = Params.intValue(req, "idReview", 0);
         // L'auteur est l'utilisateur connecté, jamais un champ du formulaire (ignoré à la modification)
         int idUser = SessionUtils.getConnectedUser(req).getId();

@@ -1,5 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ page import="util.Html" %>
+<%@ page import="util.Csrf" %>
 <%@ page import="dao.Category, java.util.ArrayList, util.SessionUtils" %>
 <% boolean connected = SessionUtils.isUserConnected(request); %>
 
@@ -89,11 +90,11 @@
                                                     <i class="bx bx-edit-alt me-1"></i>
                                                     Modifier
                                                 </a>
-                                                <a class="dropdown-item"
-                                                   href="category?action=delete&id=<%= Html.esc(category.getId()) %>">
-                                                    <i class="bx bx-trash me-1"></i>
-                                                    Supprimer
-                                                </a>
+                                                <form method="POST" action="category" class="d-inline" onsubmit="return confirm('Confirmer la suppression ?')">
+                                                    <input type="hidden" name="_csrf" value="<%= Html.esc(Csrf.token(request)) %>">
+                                                    <input type="hidden" name="id" value="<%= Html.esc(category.getId()) %>">
+                                                    <button type="submit" class="dropdown-item"><i class="bx bx-trash me-1"></i> Supprimer</button>
+                                                </form>
                                             </div>
                                         </div>
                                     </td>

@@ -24,13 +24,6 @@ public class RecipeSellServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
-            String action = req.getParameter("action");
-
-            if ("delete".equals(action)) {
-                RecipeSell recipeSell = new RecipeSell(Params.requiredInt(req, "id"));
-                recipeSell.delete();
-            }
-
             ArrayList<Recipe> recipies = Recipe.all();
             ArrayList<Category> categories = Category.all();
             ArrayList<User> users = User.all();
@@ -68,6 +61,16 @@ public class RecipeSellServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+        if ("delete".equals(req.getParameter("action"))) {
+            try {
+                new RecipeSell(Params.requiredInt(req, "id")).delete(); // le trigger restitue le stock et retire la commission
+            } catch (Exception e) {
+                throw new ServletException(e);
+            }
+            resp.sendRedirect("recipe-sell");
+            return;
+        }
+
         boolean update = "update".equals(req.getParameter("action"));
         int id = Params.intValue(req, "idRecipeSell", 0);
         int idRecipe = Params.requiredInt(req, "idRecipe");

@@ -1,5 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ page import="util.Html" %>
+<%@ page import="util.Csrf" %>
 <%@ page import="dao.Review, dao.User, dao.Recipe, java.util.ArrayList, util.SessionUtils" %>
 <% boolean connected = SessionUtils.isUserConnected(request); %>
 
@@ -233,10 +234,11 @@
                                                 class="update-btn btn rounded-pill btn-icon btn-outline-secondary">
                                                     <span class="tf-icons bx bx-edit"></span>
                                                 </a>
-                                                <a href="review?action=delete&id=<%= Html.esc(review.getId()) %>" type="button"
-                                                class="delete-btn btn rounded-pill btn-icon btn-outline-danger">
-                                                    <span class="tf-icons bx bx-trash"></span>
-                                                </a>
+                                                <form method="POST" action="review" class="d-inline" onsubmit="return confirm('Confirmer la suppression ?')">
+                                                    <input type="hidden" name="_csrf" value="<%= Html.esc(Csrf.token(request)) %>">
+                                                    <input type="hidden" name="id" value="<%= Html.esc(review.getId()) %>">
+                                                    <button type="submit" class="delete-btn btn rounded-pill btn-icon btn-outline-danger"><span class="tf-icons bx bx-trash"></span></button>
+                                                </form>
                                             </div>
                                             <% } %>
                                         </div>

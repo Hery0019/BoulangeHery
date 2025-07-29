@@ -1,5 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ page import="util.Html" %>
+<%@ page import="util.Csrf" %>
 <%@ page import="dao.Ingredient, util.SessionUtils" %>
 <%
     boolean connected = SessionUtils.isUserConnected(request);
@@ -53,6 +54,7 @@
                                 </div>
                                 <div class="card-body">
                                     <form method="POST" action="ingredient">
+                                        <input type="hidden" name="_csrf" value="<%= Html.esc(Csrf.token(request)) %>">
                                         <input type="hidden" name="action"
                                                value="<%= Html.esc(request.getAttribute("action")) %>">
                                         <input type="hidden" name="idIngredient" value="<%= Html.esc(ingredient.getId()) %>">

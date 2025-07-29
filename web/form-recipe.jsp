@@ -1,5 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ page import="util.Html" %>
+<%@ page import="util.Csrf" %>
 <%@ page import="dao.Perfume, dao.Recipe, dao.Category, java.util.ArrayList, util.SessionUtils" %>
 <% boolean connected = SessionUtils.isUserConnected(request); %>
 <% Recipe recipe = (Recipe) request.getAttribute("recipe"); %>
@@ -54,6 +55,7 @@
                                             method="POST"
                                             action="recipe"
                                     >
+                                        <input type="hidden" name="_csrf" value="<%= Html.esc(Csrf.token(request)) %>">
                                         <input type="hidden" name="action"
                                                value="<%= Html.esc(request.getAttribute("action")) %>">
                                         <input type="hidden" name="idRecipe" value="<%= Html.esc(recipe.getId()) %>">

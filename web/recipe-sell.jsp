@@ -1,6 +1,7 @@
 
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ page import="util.Html" %>
+<%@ page import="util.Csrf" %>
 <%@ page import="dao.Recipe, dao.Category, dao.User, dao.RecipeSell, java.util.ArrayList, util.SessionUtils" %>
 <%@ page import="java.lang.Exception" %>
 
@@ -240,11 +241,11 @@
                                                         <i class="bx bx-edit-alt me-1"></i>
                                                         Modifier
                                                     </a>
-                                                    <a class="dropdown-item"
-                                                    href="recipe-sell?action=delete&id=<%= Html.esc(recipeSell.getId()) %>">
-                                                        <i class="bx bx-trash me-1"></i>
-                                                        Supprimer
-                                                    </a>
+                                                    <form method="POST" action="recipe-sell" class="d-inline" onsubmit="return confirm('Confirmer la suppression ?')">
+                                                        <input type="hidden" name="_csrf" value="<%= Html.esc(Csrf.token(request)) %>">
+                                                        <input type="hidden" name="id" value="<%= Html.esc(recipeSell.getId()) %>">
+                                                        <button type="submit" class="dropdown-item"><i class="bx bx-trash me-1"></i> Supprimer</button>
+                                                    </form>
                                                     <% } %>
                                                 </div>
                                             </div>

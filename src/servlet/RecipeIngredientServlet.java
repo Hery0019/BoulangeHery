@@ -13,22 +13,10 @@ import util.Params;
 
 public class RecipeIngredientServlet extends HttpServlet {
 
+    /** Pas de contenu propre : on renvoie vers la fiche de la recette. */
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        try {
-            String action = req.getParameter("action");
-            int idRecipe = Params.requiredInt(req, "idRecipe");
-
-            if ("delete".equals(action)) {
-                int idIngredient = Params.requiredInt(req, "idIngredient");
-                RecipeIngredient recipeIngredient = new RecipeIngredient(idRecipe, idIngredient);
-                recipeIngredient.delete();
-            }
-
-            resp.sendRedirect("recipe-details?idRecipe=" + idRecipe);
-        } catch (Exception e) {
-            throw new ServletException(e);
-        }
+        resp.sendRedirect("recipe-details?idRecipe=" + Params.requiredInt(req, "idRecipe"));
     }
 
     @Override
@@ -36,8 +24,18 @@ public class RecipeIngredientServlet extends HttpServlet {
         String action = req.getParameter("action");
         int idRecipe = Params.requiredInt(req, "idRecipe");
         int idIngredient = Params.requiredInt(req, "idIngredient");
-        double quantity = Params.requiredDouble(req, "quantity");
 
+        if ("delete".equals(action)) {
+            try {
+                new RecipeIngredient(idRecipe, idIngredient).delete();
+            } catch (Exception e) {
+                throw new ServletException(e);
+            }
+            resp.sendRedirect("recipe-details?idRecipe=" + idRecipe);
+            return;
+        }
+
+        double quantity = Params.requiredDouble(req, "quantity");
         RecipeIngredient recipeIngredient = new RecipeIngredient(idRecipe, idIngredient, quantity);
 
         try {

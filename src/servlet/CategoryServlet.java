@@ -18,17 +18,6 @@ public class CategoryServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
-            String action = req.getParameter("action");
-
-            if ("delete".equals(action)) {
-                Category category = new Category(Params.requiredInt(req, "id"));
-                try {
-                    category.delete();
-                } catch (EntityInUseException e) {
-                    req.setAttribute("errorMessage", e.getMessage());
-                }
-            }
-
             ArrayList<Category> categories = Category.all();
             req.setAttribute("categories", categories);
             req.setAttribute("activeMenuItem", "category");
@@ -43,6 +32,22 @@ public class CategoryServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
         String action = req.getParameter("action");
+
+        if ("delete".equals(action)) {
+            Category category = new Category(Params.requiredInt(req, "id"));
+            try {
+                category.delete();
+            } catch (EntityInUseException e) {
+                req.setAttribute("errorMessage", e.getMessage());
+                doGet(req, resp);
+                return;
+            } catch (Exception e) {
+                throw new ServletException(e);
+            }
+            resp.sendRedirect("category");
+            return;
+        }
+
         int id = Params.intValue(req, "idCategory", 0);
         String name = Params.requiredString(req, "categoryName");
         Category category = new Category(id, name);

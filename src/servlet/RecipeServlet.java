@@ -23,17 +23,6 @@ public class RecipeServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
-            String action = req.getParameter("action");
-
-            if ("delete".equals(action)) {
-                Recipe recipe = new Recipe(Params.requiredInt(req, "id"));
-                try {
-                    recipe.delete();
-                } catch (EntityInUseException e) {
-                    req.setAttribute("errorMessage", e.getMessage());
-                }
-            }
-
             ArrayList<Category> categories = Category.all();
             ArrayList<Perfume> perfumes = Perfume.all();
             ArrayList<Ingredient> ingredients = Ingredient.all();
@@ -71,6 +60,22 @@ public class RecipeServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
         String action = req.getParameter("action");
+
+        if ("delete".equals(action)) {
+            Recipe recipe = new Recipe(Params.requiredInt(req, "id"));
+            try {
+                recipe.delete();
+            } catch (EntityInUseException e) {
+                req.setAttribute("errorMessage", e.getMessage());
+                doGet(req, resp);
+                return;
+            } catch (Exception e) {
+                throw new ServletException(e);
+            }
+            resp.sendRedirect("recipe");
+            return;
+        }
+
         int id = Params.intValue(req, "idRecipe", 0);
         String title = Params.requiredString(req, "recipeTitle");
         String description = Params.string(req, "recipeDescription", "");

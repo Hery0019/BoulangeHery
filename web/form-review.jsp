@@ -1,5 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ page import="util.Html" %>
+<%@ page import="util.Csrf" %>
 <%@ page import="dao.Recipe, dao.Review, java.util.ArrayList, util.SessionUtils" %>
 <% boolean connected = SessionUtils.isUserConnected(request); %>
 <% Review review = (Review) request.getAttribute("review"); %>
@@ -51,6 +52,7 @@
                                 </div>
                                 <div class="card-body">
                                     <form method="POST" action="review">
+                                        <input type="hidden" name="_csrf" value="<%= Html.esc(Csrf.token(request)) %>">
                                         <input type="hidden" name="action"
                                                value="<%= Html.esc(request.getAttribute("action")) %>">
                                         <input type="hidden" name="idReview" value="<%= Html.esc(review.getId()) %>">
