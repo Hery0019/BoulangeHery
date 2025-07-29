@@ -208,7 +208,7 @@ public class Ingredient {
             connection.commit();
         } catch (Exception e) {
             connection.rollback();
-            throw e;
+            throw DuplicateEntityException.orSame(e, "Un ingrédient porte déjà ce nom avec cette unité.");
         } finally {
             statement.close();
             connection.close();
@@ -234,7 +234,7 @@ public class Ingredient {
             connection.commit();
         } catch (Exception e) {
             connection.rollback();
-            throw e;
+            throw DuplicateEntityException.orSame(e, "Un ingrédient porte déjà ce nom avec cette unité.");
         } finally {
             statement.close();
             connection.close();

@@ -54,6 +54,7 @@
                                 <div class="card-body">
                                     <form method="POST" action="step">
                                         <input type="hidden" name="_csrf" value="<%= Html.esc(Csrf.token(request)) %>">
+                                        <% if (request.getAttribute("errorMessage") != null) { %>} . "\n" . $1 . q{<div class="alert alert-danger alert-dismissible" role="alert">} . "\n" . $1 . q{    <%= Html.esc(request.getAttribute("errorMessage")) %>} . "\n" . $1 . q{    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>} . "\n" . $1 . q{</div>} . "\n" . $1 . q{<% } %>
                                         <input type="hidden" name="action"
                                                value="<%= Html.esc(request.getAttribute("action")) %>">
                                         <input type="hidden" name="idStep" value="<%= Html.esc(step.getId()) %>">

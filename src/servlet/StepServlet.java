@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import dao.DuplicateEntityException;
 import dao.Recipe;
 import dao.Step;
 import util.Params;
@@ -58,6 +59,7 @@ public class StepServlet extends HttpServlet {
             return;
         }
 
+        boolean update = "update".equals(action);
         int id = Params.intValue(req, "idStep", 0);
         int idRecipe = Params.requiredInt(req, "stepIdRecipe");
         int number = Params.requiredInt(req, "stepNumber");
@@ -66,11 +68,16 @@ public class StepServlet extends HttpServlet {
         Step step = new Step(id, idRecipe, number, instruction, cookTime);
 
         try {
-            if ("update".equals(action)) {
+            if (update) {
                 step.update();
             } else {
                 step.create();
             }
+        } catch (DuplicateEntityException e) {
+            req.setAttribute("errorMessage", e.getMessage());
+            req.setAttribute("submitted", step);
+            req.getRequestDispatcher(update ? "form-step?action=update&id=" + id : "form-step").forward(req, resp);
+            return;
         } catch (Exception e) {
             throw new ServletException(e);
         }

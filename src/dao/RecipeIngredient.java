@@ -158,7 +158,7 @@ public class RecipeIngredient {
             connection.commit();
         } catch (Exception e) {
             if (connection != null)  connection.rollback();
-            throw e;
+            throw DuplicateEntityException.orSame(e, "La recette contient déjà cet ingrédient.");
         } finally {
             if (statement != null) statement.close();
             if (connection != null) connection.close();
@@ -183,7 +183,7 @@ public class RecipeIngredient {
             connection.commit();
         } catch (Exception e) {
             if (connection != null)  connection.rollback();
-            throw e;
+            throw DuplicateEntityException.orSame(e, "La recette contient déjà cet ingrédient.");
         } finally {
             if (statement != null) statement.close();
             if (connection != null) connection.close();

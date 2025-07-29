@@ -7,18 +7,18 @@ CREATE TABLE gotta_taste_user (
     id_user SERIAL PRIMARY KEY,
     firstname VARCHAR(100) NOT NULL,
     lastname VARCHAR(100) NOT NULL,
-    email VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
     user_password VARCHAR(255) NOT NULL -- empreinte PBKDF2 (util.PasswordHasher), jamais en clair
 );
 
 CREATE TABLE category (
     id_category SERIAL PRIMARY KEY,
-    category_name VARCHAR(255) NOT NULL
+    category_name VARCHAR(255) NOT NULL UNIQUE
 );
 
 CREATE TABLE perfume (
     id_perfume SERIAL PRIMARY KEY,
-    perfume_name VARCHAR(255) NOT NULL
+    perfume_name VARCHAR(255) NOT NULL UNIQUE
 );
 
 CREATE TABLE recipe (
@@ -42,7 +42,7 @@ CREATE TABLE vendeur (
     firstname VARCHAR(100) NOT NULL,
     lastname VARCHAR(100) NOT NULL,
     sexe VARCHAR(10) NOT NULL,
-    email VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
     salary DECIMAL(10,2) NOT NULL
 );
 
@@ -58,7 +58,8 @@ CREATE TABLE ingredient (
     id_ingredient SERIAL PRIMARY KEY,
     ingredient_name VARCHAR(255) NOT NULL,
     unit VARCHAR(50) NOT NULL, -- For example, grams, milliliters, teaspoons, etc.
-    price INT NOT NULL DEFAULT 0
+    price INT NOT NULL DEFAULT 0,
+    UNIQUE (ingredient_name, unit)
 );
 
 CREATE TABLE recipe_ingredient (
@@ -76,6 +77,7 @@ CREATE TABLE step (
     step_number INT NOT NULL,
     instruction TEXT NOT NULL,
     cook_time TIME NOT NULL,
+    UNIQUE (id_recipe, step_number),
     FOREIGN KEY (id_recipe) REFERENCES recipe(id_recipe) ON DELETE CASCADE
 );
 

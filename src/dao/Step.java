@@ -253,7 +253,7 @@ public class Step {
         } catch (Exception e) {
             if (connection != null)
                 connection.rollback();
-            throw e;
+            throw DuplicateEntityException.orSame(e, "Cette recette a déjà une étape portant ce numéro.");
         } finally {
             if (statement != null)
                 statement.close();
@@ -282,7 +282,7 @@ public class Step {
         } catch (Exception e) {
             if (connection != null)
                 connection.rollback();
-            throw e;
+            throw DuplicateEntityException.orSame(e, "Cette recette a déjà une étape portant ce numéro.");
         } finally {
             if (statement != null)
                 statement.close();

@@ -3,6 +3,7 @@ package dao;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
@@ -87,6 +88,8 @@ public class User {
                 keys.next();
                 return keys.getInt(1);
             }
+        } catch (SQLException e) {
+            throw DuplicateEntityException.orSame(e, "Un compte existe déjà avec cet email.");
         }
     }
 

@@ -148,7 +148,7 @@ public class Category {
             connection.commit();
         } catch (Exception e) {
             connection.rollback();
-            throw e;
+            throw DuplicateEntityException.orSame(e, "Une catégorie porte déjà ce nom.");
         } finally {
             statement.close();
             connection.close();
@@ -172,7 +172,7 @@ public class Category {
             connection.commit();
         } catch (Exception e) {
             connection.rollback();
-            throw e;
+            throw DuplicateEntityException.orSame(e, "Une catégorie porte déjà ce nom.");
         } finally {
             statement.close();
             connection.close();

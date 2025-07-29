@@ -2,12 +2,12 @@ package servlet;
 
 import java.io.IOException;
 
-import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import dao.DuplicateEntityException;
 import dao.RecipeIngredient;
 import util.Params;
 
@@ -41,15 +41,15 @@ public class RecipeIngredientServlet extends HttpServlet {
         try {
             if ("update".equals(action)) {
                 recipeIngredient.update();
-            } else if (recipeIngredient.find()) {
-                RequestDispatcher dispatcher = req.getRequestDispatcher(
-                        "form-recipe-ingredient?idRecipe=" + idRecipe + "&idIngredient=" + idIngredient);
-                req.setAttribute("errorMessage", "La recette contient déjà cet ingrédient");
-                dispatcher.forward(req, resp);
-                return;
             } else {
+                // La clé primaire (id_recipe, id_ingredient) garantit l'unicité, sans lecture préalable.
                 recipeIngredient.create();
             }
+        } catch (DuplicateEntityException e) {
+            req.setAttribute("errorMessage", e.getMessage());
+            req.getRequestDispatcher("form-recipe-ingredient?idRecipe=" + idRecipe + "&idIngredient=" + idIngredient)
+                    .forward(req, resp);
+            return;
         } catch (Exception e) {
             throw new ServletException(e);
         }

@@ -1,6 +1,7 @@
 package servlet;
 
 import java.io.IOException;
+
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -20,19 +21,19 @@ public class FormCategoryServlet extends HttpServlet {
             return;
         }
 
-        String action = req.getParameter("action");
-        Category category = new Category();
-
-        if (action != null && action.equals("update")) {
-            int id = Params.requiredInt(req, "id");
-            category.setId(id);
-            try {
-                category.find();
-            } catch (Exception e) {
-                throw new ServletException(e);
+        String action = "update".equals(req.getParameter("action")) ? "update" : "create";
+        // Valeurs re-soumises par CategoryServlet après un refus (doublon), le cas échéant
+        Category category = (Category) req.getAttribute("submitted");
+        if (category == null) {
+            category = new Category();
+            if ("update".equals(action)) {
+                category.setId(Params.requiredInt(req, "id"));
+                try {
+                    category.find();
+                } catch (Exception e) {
+                    throw new ServletException(e);
+                }
             }
-        } else {
-            action = "create";
         }
 
         req.setAttribute("action", action);
@@ -42,6 +43,12 @@ public class FormCategoryServlet extends HttpServlet {
 
         RequestDispatcher dispatcher = req.getRequestDispatcher("form-category.jsp");
         dispatcher.forward(req, resp);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        // Atteint uniquement par forward depuis CategoryServlet.doPost (refus)
+        doGet(req, resp);
     }
 
 }

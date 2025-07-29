@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import dao.Category;
+import dao.DuplicateEntityException;
 import dao.EntityInUseException;
 import util.Params;
 
@@ -48,16 +49,23 @@ public class CategoryServlet extends HttpServlet {
             return;
         }
 
+        boolean update = "update".equals(action);
         int id = Params.intValue(req, "idCategory", 0);
         String name = Params.requiredString(req, "categoryName");
         Category category = new Category(id, name);
 
         try {
-            if ("update".equals(action)) {
+            if (update) {
                 category.update();
             } else {
                 category.create();
             }
+        } catch (DuplicateEntityException e) {
+            req.setAttribute("errorMessage", e.getMessage());
+            req.setAttribute("submitted", category);
+            req.getRequestDispatcher(update ? "form-category?action=update&id=" + id : "form-category")
+                    .forward(req, resp);
+            return;
         } catch (Exception e) {
             throw new ServletException(e);
         }

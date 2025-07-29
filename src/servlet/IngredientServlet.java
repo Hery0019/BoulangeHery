@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import dao.DuplicateEntityException;
 import dao.EntityInUseException;
 import dao.Ingredient;
 import util.Params;
@@ -57,6 +58,7 @@ public class IngredientServlet extends HttpServlet {
             return;
         }
 
+        boolean update = "update".equals(action);
         int id = Params.intValue(req, "idIngredient", 0);
         String name = Params.requiredString(req, "ingredientName");
         String unit = Params.requiredString(req, "ingredientUnit");
@@ -64,11 +66,17 @@ public class IngredientServlet extends HttpServlet {
         Ingredient ingredient = new Ingredient(id, name, unit, price);
 
         try {
-            if ("update".equals(action)) {
+            if (update) {
                 ingredient.update();
             } else {
                 ingredient.create();
             }
+        } catch (DuplicateEntityException e) {
+            req.setAttribute("errorMessage", e.getMessage());
+            req.setAttribute("submitted", ingredient);
+            req.getRequestDispatcher(update ? "form-ingredient?action=update&id=" + id : "form-ingredient")
+                    .forward(req, resp);
+            return;
         } catch (Exception e) {
             throw new ServletException(e);
         }

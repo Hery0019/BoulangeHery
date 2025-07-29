@@ -23,28 +23,23 @@ public class FormStepServlet extends HttpServlet {
             return;
         }
 
-        String action = req.getParameter("action");
+        String action = "update".equals(req.getParameter("action")) ? "update" : "create";
         ArrayList<Recipe> recipes;
-        int idRecipe = Params.intValue(req, "idRecipe", 0);
-        Step step = new Step();
-        step.setIdRecipe(idRecipe);
+        // Valeurs re-soumises par StepServlet après un refus (doublon), le cas échéant
+        Step step = (Step) req.getAttribute("submitted");
 
         try {
             recipes = Recipe.all();
+            if (step == null) {
+                step = new Step();
+                step.setIdRecipe(Params.intValue(req, "idRecipe", 0));
+                if ("update".equals(action)) {
+                    step.setId(Params.requiredInt(req, "id"));
+                    step.find();
+                }
+            }
         } catch (Exception e) {
             throw new ServletException(e);
-        }
-
-        if (action != null && action.equals("update")) {
-            int id = Params.requiredInt(req, "id");
-            step.setId(id);
-            try {
-                step.find();
-            } catch (Exception e) {
-                throw new ServletException(e);
-            }
-        } else {
-            action = "create";
         }
 
         req.setAttribute("action", action);
@@ -55,6 +50,12 @@ public class FormStepServlet extends HttpServlet {
 
         RequestDispatcher dispatcher = req.getRequestDispatcher("form-step.jsp");
         dispatcher.forward(req, resp);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        // Atteint uniquement par forward depuis StepServlet.doPost (refus)
+        doGet(req, resp);
     }
 
 }

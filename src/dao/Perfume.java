@@ -147,7 +147,7 @@ public class Perfume {
             if (connection != null) {
                 connection.rollback();
             }
-            throw e;
+            throw DuplicateEntityException.orSame(e, "Un parfum porte déjà ce nom.");
         } finally {
             if (statement != null) {
                 statement.close();
@@ -176,7 +176,7 @@ public class Perfume {
             if (connection != null) {
                 connection.rollback();
             }
-            throw e;
+            throw DuplicateEntityException.orSame(e, "Un parfum porte déjà ce nom.");
         } finally {
             if (statement != null) {
                 statement.close();

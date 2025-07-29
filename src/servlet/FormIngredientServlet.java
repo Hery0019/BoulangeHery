@@ -1,6 +1,7 @@
 package servlet;
 
 import java.io.IOException;
+
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -20,19 +21,19 @@ public class FormIngredientServlet extends HttpServlet {
             return;
         }
 
-        String action = req.getParameter("action");
-        Ingredient ingredient = new Ingredient();
-
-        if (action != null && action.equals("update")) {
-            int id = Params.requiredInt(req, "id");
-            ingredient.setId(id);
-            try {
-                ingredient.find();
-            } catch (Exception e) {
-                throw new ServletException(e);
+        String action = "update".equals(req.getParameter("action")) ? "update" : "create";
+        // Valeurs re-soumises par IngredientServlet après un refus (doublon), le cas échéant
+        Ingredient ingredient = (Ingredient) req.getAttribute("submitted");
+        if (ingredient == null) {
+            ingredient = new Ingredient();
+            if ("update".equals(action)) {
+                ingredient.setId(Params.requiredInt(req, "id"));
+                try {
+                    ingredient.find();
+                } catch (Exception e) {
+                    throw new ServletException(e);
+                }
             }
-        } else {
-            action = "create";
         }
 
         req.setAttribute("action", action);
@@ -42,6 +43,12 @@ public class FormIngredientServlet extends HttpServlet {
 
         RequestDispatcher dispatcher = req.getRequestDispatcher("form-ingredient.jsp");
         dispatcher.forward(req, resp);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        // Atteint uniquement par forward depuis IngredientServlet.doPost (refus)
+        doGet(req, resp);
     }
 
 }
