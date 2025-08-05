@@ -305,10 +305,8 @@ public class Recipe {
             connection = DBConnection.getPostgesConnection();
 
             StringBuilder sql = new StringBuilder(
-                    "SELECT DISTINCT r.* " +
+                    "SELECT r.* " +
                             "FROM recipe r " +
-                            "LEFT JOIN recipe_ingredient ri ON r.id_recipe = ri.id_recipe " +
-                            "LEFT JOIN ingredient i ON ri.id_ingredient = i.id_ingredient " +
                             "WHERE title ILIKE ? " +
                             "AND recipe_description ILIKE ?");
 
