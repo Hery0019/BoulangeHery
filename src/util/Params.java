@@ -1,5 +1,6 @@
 package util;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
@@ -116,6 +117,27 @@ public final class Params {
 
     public static LocalTime requiredTime(HttpServletRequest req, String name) {
         LocalTime value = time(req, name);
+        if (value == null) {
+            throw missing(name);
+        }
+        return value;
+    }
+
+    /** Montant décimal (virgule ou point acceptés) ou valeur par défaut si absent. */
+    public static BigDecimal decimal(HttpServletRequest req, String name, BigDecimal defaultValue) {
+        String value = raw(req, name);
+        if (value == null) {
+            return defaultValue;
+        }
+        try {
+            return new BigDecimal(value.replace(',', '.'));
+        } catch (NumberFormatException e) {
+            throw invalid(name, "montant attendu");
+        }
+    }
+
+    public static BigDecimal requiredDecimal(HttpServletRequest req, String name) {
+        BigDecimal value = decimal(req, name, null);
         if (value == null) {
             throw missing(name);
         }

@@ -1,6 +1,7 @@
 package servlet;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 
 import jakarta.servlet.RequestDispatcher;
@@ -21,8 +22,8 @@ public class IngredientServlet extends HttpServlet {
         try {
             String name = Params.string(req, "searchName", "");
             String unit = Params.string(req, "searchUnit", "");
-            int minPrice = Params.intValue(req, "searchMinPrice", 0);
-            int maxPrice = Params.intValue(req, "searchMaxPrice", 0);
+            BigDecimal minPrice = Params.decimal(req, "searchMinPrice", null);
+            BigDecimal maxPrice = Params.decimal(req, "searchMaxPrice", null);
 
             ArrayList<Ingredient> ingredients = Ingredient.search(name, unit, minPrice, maxPrice);
 
@@ -62,7 +63,7 @@ public class IngredientServlet extends HttpServlet {
         int id = Params.intValue(req, "idIngredient", 0);
         String name = Params.requiredString(req, "ingredientName");
         String unit = Params.requiredString(req, "ingredientUnit");
-        int price = Params.requiredInt(req, "ingredientPrice");
+        BigDecimal price = Params.requiredDecimal(req, "ingredientPrice");
         Ingredient ingredient = new Ingredient(id, name, unit, price);
 
         try {

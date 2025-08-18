@@ -75,13 +75,13 @@
                                         <div class="row g-2 mb-3">
                                             <div class="col mb-0">
                                                 <label class="form-label" for="search-min-price">Prix minimum</label>
-                                                <input name="searchMinPrice" min="1" type="number" class="form-control"
+                                                <input name="searchMinPrice" min="0" step="0.01" type="number" class="form-control"
                                                        id="search-min-price" placeholder="Prix" aria-label="Prix"
                                                        aria-describedby="search-min-price">
                                             </div>
                                             <div class="col mb-0">
                                                 <label class="form-label" for="search-max-price">Prix maximum</label>
-                                                <input name="searchMaxPrice" min="1" type="number" class="form-control"
+                                                <input name="searchMaxPrice" min="0" step="0.01" type="number" class="form-control"
                                                        id="search-max-price" placeholder="Prix" aria-label="Prix"
                                                        aria-describedby="search-max-price">
                                             </div>

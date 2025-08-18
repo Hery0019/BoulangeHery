@@ -78,7 +78,7 @@
                                         <div class="mb-3">
                                             <label class="form-label" for="ingredientPrice">Prix unitaire</label>
                                             <input value="<%= Html.esc(ingredient.getPrice()) %>" name="ingredientPrice"
-                                                   min="1" type="number" class="form-control" id="ingredientPrice"
+                                                   min="0" step="0.01" type="number" class="form-control" id="ingredientPrice"
                                                    placeholder="Prix unitaire"
                                                    required
                                             />
