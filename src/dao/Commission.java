@@ -6,7 +6,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
 import java.util.ArrayList;
 import java.util.Locale;
 
@@ -19,15 +18,6 @@ public class Commission {
     private LocalDate commissionDate = LocalDate.now();
     private String vendeurSexe = "";
 
-    private static final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
-    private static final DateTimeFormatter humanTimeFormatter = new DateTimeFormatterBuilder()
-            .appendPattern("H")
-            .appendLiteral(" heure ")
-            .optionalStart()
-            .appendPattern("m")
-            .appendLiteral(" minute")
-            .optionalEnd()
-            .toFormatter(Locale.FRENCH);
     private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter humanDateFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy",
             Locale.FRENCH);
@@ -114,50 +104,6 @@ public class Commission {
 
     
 
-    // public static Commission findById(int id) throws Exception {
-    //     Connection connection = null;
-    //     PreparedStatement statement = null;
-    //     ResultSet resultSet = null;
-    
-    //     try {
-    //         connection = DBConnection.getPostgesConnection();
-    //         statement = connection.prepareStatement(
-    //                 "SELECT * FROM commission WHERE id_commission = ?");
-    //         statement.setInt(1, id);
-    //         resultSet = statement.executeQuery();
-    
-    //         if (resultSet.next()) {
-    //             Commission Commission = new Commission();
-    //             Commission.setId(resultSet.getInt("id_commission"));
-    //             Commission.setTitle(resultSet.getString("title"));
-    //             Commission.setDescription(resultSet.getString("Commission_description"));
-    //             Commission.setidVendeur(resultSet.getInt("id_category"));
-    //             Commission.setidRecipe(resultSet.getInt("id_perfume"));
-    //             Commission.setCookTime(resultSet.getTime("cook_time").toLocalTime());
-    //             Commission.setCreatedBy(resultSet.getString("created_by"));
-    //             Commission.setcommissionDate(resultSet.getDate("created_date").toLocalDate());
-    //             Commission.setcommissionAmount(resultSet.getDouble("commissionAmount"));
-    //             return Commission;
-    //         }
-    //     } catch (Exception e) {
-    //         throw e;
-    //     } finally {
-    //         if (resultSet != null) {
-    //             resultSet.close();
-    //         }
-    //         if (statement != null) {
-    //             statement.close();
-    //         }
-    //         if (connection != null) {
-    //             connection.close();
-    //         }
-    //     }
-    
-    //     return null; // Retourne null si aucune recette n'a été trouvée
-    // }
-    
-    
-
     public static ArrayList<Commission> search(
             int searchidVendeur,
             int searchidRecipe,
@@ -177,31 +123,24 @@ public class Commission {
             StringBuilder sql = new StringBuilder(
                     "SELECT c.*, v.sexe FROM commission c " +
                     "JOIN vendeur v ON c.id_vendeur = v.id_vendeur WHERE 1=1");
-            StringBuilder fullQuery = new StringBuilder(sql);
 
             if (searchidVendeur != 0) {
                 sql.append(" AND c.id_vendeur = ?");
-                fullQuery.append(" AND c.id_vendeur = ").append(searchidVendeur);
             }
             if (searchidRecipe != 0) {
                 sql.append(" AND c.id_recipe = ?");
-                fullQuery.append(" AND c.id_recipe = ").append(searchidRecipe);
             }
             if (minCommissionDate != null) {
                 sql.append(" AND c.commission_date >= ?");
-                fullQuery.append(" AND c.commission_date >= '").append(minCommissionDate).append("'");
             }
             if (maxCommissionDate != null) {
                 sql.append(" AND c.commission_date <= ?");
-                fullQuery.append(" AND c.commission_date <= '").append(maxCommissionDate).append("'");
             }
             if (commissionAmount != 0.0) {
                 sql.append(" AND c.commission_amount = ?");
-                fullQuery.append(" AND c.commission_amount = ").append(commissionAmount);
             }
             if (sexeVendeur != null && !sexeVendeur.isEmpty()) {
                 sql.append(" AND v.sexe = ?");
-                fullQuery.append(" AND v.sexe = '").append(sexeVendeur).append("'");
             }
 
             sql.append(" ORDER BY c.id_commission ASC");
@@ -227,8 +166,6 @@ public class Commission {
                 statement.setString(paramIndex++, sexeVendeur);
             }
 
-            // Afficher la requête SQL complète
-            System.out.println("Requête SQL exécutée : " + fullQuery.toString());
             resultSet = statement.executeQuery();
 
             while (resultSet.next()) {

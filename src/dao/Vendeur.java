@@ -116,7 +116,7 @@ public class Vendeur {
                 String sexe = resultSet.getString("sexe");
                 double salary = resultSet.getDouble("salary");
     
-                return new Vendeur(id, firstname, lastname, email, salary);
+                return new Vendeur(id, firstname, sexe, lastname, email, salary);
             }
         } catch (Exception e) {
             throw e;
@@ -135,84 +135,6 @@ public class Vendeur {
         return null; // Retourne null si aucun utilisateur n'a été trouvé
     }
     
-
-    // public void create() throws Exception {
-    //     Connection connection = null;
-    //     PreparedStatement statement = null;
-    //     try {
-    //         connection = DBConnection.getPostgesConnection();
-    //         connection.setAutoCommit(false);
-    //         statement = connection.prepareStatement(
-    //             "INSERT INTO gotta_taste_user(firstname, lastname, email, user_password)"
-    //             + " VALUES (?, ?, ?, ?)"
-    //         );
-    //         statement.setString(1, this.firstname);
-    //         statement.setString(2, this.lastname);
-    //         statement.setString(3, this.email);
-    //         statement.setString(4, this.password);
-    //         statement.execute();
-    //         connection.commit();
-    //     } catch (Exception e) {
-    //         connection.rollback();
-    //         throw e;
-    //     } finally {
-    //         statement.close();
-    //         connection.close();
-    //     }
-    // }
-
-    // public void findByEmailAndPassword() throws Exception {
-    //     Connection connection = null;
-    //     PreparedStatement statement = null;
-    //     ResultSet resultSet = null;
-
-    //     try {
-    //         connection = DBConnection.getPostgesConnection();
-    //         statement = connection.prepareStatement(
-    //             "SELECT * FROM gotta_taste_user"
-    //             + " WHERE email = ? AND user_password = ?"
-    //         );
-    //         statement.setString(1, this.email);
-    //         statement.setString(2, this.password);
-    //         resultSet = statement.executeQuery();
-
-    //         while (resultSet.next()) {
-    //             id = resultSet.getInt("id_user");
-    //             firstname = resultSet.getString("firstname");
-    //             lastname = resultSet.getString("lastname");
-    //         }
-    //     } catch (Exception e) {
-    //         throw e;
-    //     } finally {
-    //         if (resultSet != null) {
-    //             resultSet.close();
-    //         }
-    //         if (statement != null) {
-    //             statement.close();
-    //         }
-    //         if (connection != null) {
-    //             connection.close();
-    //         }
-    //     }
-    // }
-
-    // private String hashPassword(String password) {
-    //     MessageDigest md = null;
-    //     byte[] hash = null;
-
-    //     try {
-    //         md = MessageDigest.getInstance("SHA-256");
-    //         hash = md.digest(password.getBytes());
-    //     } catch (NoSuchAlgorithmException e) {
-    //         e.printStackTrace();
-    //     }
-
-    //     StringBuilder sb = new StringBuilder();
-    //     for (byte b : hash) {
-    //         sb.append(String.format("%02x", b));
-    //     }
-    //     return sb.toString();
-    // }
 
     public int getId() {
         return id;

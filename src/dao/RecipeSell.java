@@ -172,11 +172,11 @@ public class RecipeSell {
             statement.executeUpdate();
             connection.commit();
         } catch (Exception e) {
-            connection.rollback();
+            if (connection != null) connection.rollback();
             throw e;
         } finally {
-            statement.close();
-            connection.close();
+            if (statement != null) statement.close();
+            if (connection != null) connection.close();
         }
     }
 
@@ -201,11 +201,11 @@ public class RecipeSell {
             statement.executeUpdate();
             connection.commit();
         } catch (Exception e) {
-            connection.rollback();
+            if (connection != null) connection.rollback();
             throw e;
         } finally {
-            statement.close();
-            connection.close();
+            if (statement != null) statement.close();
+            if (connection != null) connection.close();
         }
     }
 
@@ -232,51 +232,39 @@ public class RecipeSell {
 
             StringBuilder sql = new StringBuilder("SELECT * FROM recipe_sell WHERE 1=1");
 
-            StringBuilder fullQuery = new StringBuilder(sql);
 
             if (searchIdRecipe != 0) {
                 sql.append(" AND id_recipe = ?");
-                fullQuery.append(" AND id_recipe = ").append(searchIdRecipe);
             }
             if (searchIdCategory != 0) {
                 sql.append(" AND id_category = ?");
-                fullQuery.append(" AND id_category = ").append(searchIdCategory);
             }
             if (searchIdUser != 0) {
                 sql.append(" AND id_user = ?");
-                fullQuery.append(" AND id_user = ").append(searchIdUser);
             }
             if (minCombien != 0) {
                 sql.append(" AND combien >= ?");
-                fullQuery.append(" AND combien >= ").append(minCombien);
             }
             if (maxCombien != 0) {
                 sql.append(" AND combien <= ?");
-                fullQuery.append(" AND combien <= ").append(maxCombien);
             }
             if (minArgent != 0.0) {
                 sql.append(" AND argent >= ?");
-                fullQuery.append(" AND argent >= ").append(minArgent);
             }
             if (maxArgent != 0.0) {
                 sql.append(" AND argent <= ?");
-                fullQuery.append(" AND argent <= ").append(maxArgent);
             }
             if (minReste != 0.0) {
                 sql.append(" AND reste >= ?");
-                fullQuery.append(" AND reste >= ").append(minReste);
             }
             if (maxReste != 0.0) {
                 sql.append(" AND reste <= ?");
-                fullQuery.append(" AND reste <= ").append(maxReste);
             }
             if (minSellDate != null) {
                 sql.append(" AND sell_date >= ?");
-                fullQuery.append(" AND sell_date >= '").append(minSellDate).append("'");
             }
             if (maxSellDate != null) {
                 sql.append(" AND sell_date <= ?");
-                fullQuery.append(" AND sell_date <= '").append(maxSellDate).append("'");
             }
         
             sql.append(" ORDER BY id_recipe_sell ASC");
@@ -318,8 +306,6 @@ public class RecipeSell {
                 statement.setDate(paramIndex++, Date.valueOf(maxSellDate));
             }
         
-            // Afficher la requête SQL complète
-            System.out.println("Requête SQL exécutée : " + fullQuery.toString());
             resultSet = statement.executeQuery();
 
             while (resultSet.next()) {
@@ -332,15 +318,6 @@ public class RecipeSell {
                 double argent = resultSet.getDouble("argent");
                 double reste = resultSet.getDouble("reste");
                 LocalDate sellDate = resultSet.getDate("sell_date").toLocalDate();
-                 // Affichage des données extraites
-                System.out.println("id=" + id + 
-                ", idRecipe=" + idRecipe + 
-                ", idCategory=" + idCategory + 
-                ", idUser=" + idUser + 
-                ", combien=" + combien + 
-                ", argent=" + argent + 
-                ", reste=" + reste + 
-                ", sellDate=" + sellDate);
 
                 recipeSells.add(new RecipeSell(id, idVendeur, idRecipe, idCategory, idUser, combien, argent, reste, sellDate));
             }
@@ -371,11 +348,11 @@ public class RecipeSell {
             statement.executeUpdate();
             connection.commit();
         } catch (Exception e) {
-            connection.rollback();
+            if (connection != null) connection.rollback();
             throw e;
         } finally {
-            statement.close();
-            connection.close();
+            if (statement != null) statement.close();
+            if (connection != null) connection.close();
         }
     }
 

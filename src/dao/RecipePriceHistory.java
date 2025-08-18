@@ -5,7 +5,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
 import java.util.ArrayList;
 import java.sql.Date;
 import java.util.Locale;
@@ -18,15 +17,6 @@ public class RecipePriceHistory {
     private double priceAfter = 0.0;
     private LocalDate changeDate = LocalDate.now();
 
-    private static final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
-    private static final DateTimeFormatter humanTimeFormatter = new DateTimeFormatterBuilder()
-            .appendPattern("H")
-            .appendLiteral(" heure ")
-            .optionalStart()
-            .appendPattern("m")
-            .appendLiteral(" minute")
-            .optionalEnd()
-            .toFormatter(Locale.FRENCH);
     private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter humanDateFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy",
             Locale.FRENCH);
@@ -117,36 +107,28 @@ public class RecipePriceHistory {
             StringBuilder sql = new StringBuilder(
                     "SELECT * FROM recipe_price_history" +
                     " WHERE 1=1");
-            StringBuilder fullQuery = new StringBuilder(sql);
 
 
             if (searchidRecipe != 0) {
                 sql.append(" AND id_recipe = ?");
-                fullQuery.append(" AND id_recipe = ").append(searchidRecipe);
             }
             if (minRecipePriceHistoryDate != null) {
                 sql.append(" AND change_date >= ?");
-                fullQuery.append(" AND change_date >= '").append(minRecipePriceHistoryDate).append("'");
             }
             if (maxRecipePriceHistoryDate != null) {
                 sql.append(" AND change_date <= ?");
-                fullQuery.append(" AND change_date <= '").append(maxRecipePriceHistoryDate).append("'");
             }
             if (minPriceBefore != 0.0) {
                 sql.append(" AND price_before >= ?");
-                fullQuery.append(" AND price_before >= ").append(minPriceBefore);
             }
             if (maxPriceBefore != 0.0) {
                 sql.append(" AND price_before <= ?");
-                fullQuery.append(" AND price_before <= ").append(maxPriceBefore);
             }
             if (minPriceAfter != 0.0) {
                 sql.append(" AND price_after >= ?");
-                fullQuery.append(" AND price_after >= ").append(minPriceAfter);
             }
             if (maxPriceAfter != 0.0) {
                 sql.append(" AND price_after <= ?");
-                fullQuery.append(" AND price_after <= ").append(maxPriceAfter);
             }
 
 
@@ -179,8 +161,6 @@ public class RecipePriceHistory {
           
           
 
-            // Afficher la requête SQL complète
-            System.out.println("Requête SQL exécutée : " + fullQuery.toString());
             resultSet = statement.executeQuery();
 
             while (resultSet.next()) {

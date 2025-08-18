@@ -244,11 +244,11 @@ public class Recipe {
             statement.executeUpdate();
             connection.commit();
         } catch (Exception e) {
-            connection.rollback();
+            if (connection != null) connection.rollback();
             throw e;
         } finally {
-            statement.close();
-            connection.close();
+            if (statement != null) statement.close();
+            if (connection != null) connection.close();
         }
     }
 
@@ -274,11 +274,11 @@ public class Recipe {
             statement.executeUpdate();
             connection.commit();
         } catch (Exception e) {
-            connection.rollback();
+            if (connection != null) connection.rollback();
             throw e;
         } finally {
-            statement.close();
-            connection.close();
+            if (statement != null) statement.close();
+            if (connection != null) connection.close();
         }
     }
 
@@ -391,7 +391,6 @@ public class Recipe {
                 }
                 statement.setInt(paramIndex++, idIngredients.length);
             }
-            System.out.println("Query: " + sql.toString());
             resultSet = statement.executeQuery();
 
             while (resultSet.next()) {
