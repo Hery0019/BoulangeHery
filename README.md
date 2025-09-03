@@ -69,6 +69,17 @@ Les données de démonstration (`3-data.sql`) créent trois comptes dont les mot
 de passe sont indiqués en commentaire dans le script : à ne pas utiliser en
 production.
 
+## Vérification des règles en base
+
+Après installation (ou migration), rejouer le scénario `sql/tests/triggers_smoke_test.sql`
+sur une base chargée avec les données de démonstration : il vérifie en transaction
+(annulée à la fin) le stock, les ventes, les commissions, l'historique des prix, le
+temps de préparation, l'unicité et les suppressions en cascade.
+
+```
+psql -U postgres -d gotta_taste -v ON_ERROR_STOP=1 -f sql/tests/triggers_smoke_test.sql
+```
+
 ## Build et déploiement
 
 ```
