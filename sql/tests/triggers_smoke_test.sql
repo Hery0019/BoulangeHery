@@ -134,7 +134,7 @@ BEGIN
     BEGIN
         DELETE FROM recipe WHERE id_recipe = 8;
         RAISE EXCEPTION 'la recette 8 (vendue) aurait dû être protégée';
-    EXCEPTION WHEN foreign_key_violation THEN NULL;
+    EXCEPTION WHEN foreign_key_violation OR restrict_violation THEN NULL;
     END;
     RAISE NOTICE 'OK  recette vendue protégée';
 END $$;
