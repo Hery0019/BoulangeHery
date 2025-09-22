@@ -58,7 +58,7 @@ CREATE TABLE ingredient (
     id_ingredient SERIAL PRIMARY KEY,
     ingredient_name VARCHAR(255) NOT NULL,
     unit VARCHAR(50) NOT NULL, -- For example, grams, milliliters, teaspoons, etc.
-    price NUMERIC(10,2) NOT NULL DEFAULT 0 -- prix unitaire (INT arrondissait 1.5 en 2 et 0.02 en 0),
+    price NUMERIC(10,2) NOT NULL DEFAULT 0, -- prix unitaire (INT arrondissait 1.5 en 2 et 0.02 en 0)
     UNIQUE (ingredient_name, unit)
 );
 

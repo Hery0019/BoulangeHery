@@ -124,4 +124,3 @@ INSERT INTO vendeur (firstname, lastname, sexe, email, salary) VALUES
 
 -- Le stock est cree a 0 par trigger a la creation de chaque recette : approvisionnement de demo
 UPDATE recipe_stock SET reste = 100;
-    (8, 100);
