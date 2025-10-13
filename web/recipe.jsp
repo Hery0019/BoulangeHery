@@ -1,5 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ page import="util.Html" %>
+<%@ page import="util.Money" %>
 <%@ page import="util.Csrf" %>
 <%@ page import="dao.Recipe, dao.Category, dao.Ingredient, dao.Perfume, java.util.ArrayList, util.SessionUtils" %>
 <% boolean connected = SessionUtils.isUserConnected(request); %>
@@ -236,7 +237,7 @@
                                             <p><strong>Catégorie :</strong> <%= Html.esc((new Category().findById(recipe.getIdCategory())).getName()) %></p>
                                             <p><strong>Préparation :</strong> <%= Html.esc(recipe.getHumanFormattedCookTime()) %></p>
                                             <p><strong>Parfum :</strong> <%= Html.esc((new Perfume().findById(recipe.getIdPerfume())).getName()) %></p>
-                                            <p><strong>Prix :</strong> <%= Html.esc(recipe.getPrice()) %> €</p>
+                                            <p><strong>Prix :</strong> <%= Html.esc(Money.format(recipe.getPrice())) %></p>
                                             <p><strong>Créé par :</strong> <%= Html.esc(recipe.getCreatedBy()) %></p>
                                             <p><strong>Le</strong> <%= Html.esc(recipe.getHumanFormattedCreatedDate()) %></p>
 

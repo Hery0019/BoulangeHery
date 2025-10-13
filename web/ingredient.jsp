@@ -1,5 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ page import="util.Html" %>
+<%@ page import="util.Money" %>
 <%@ page import="util.Csrf" %>
 <%@ page import="dao.Ingredient, java.util.ArrayList, util.SessionUtils" %>
 <%
@@ -140,7 +141,7 @@
                                     </td>
                                     <td><%= Html.esc(ingredient.getUnit()) %>
                                     </td>
-                                    <td><%= Html.esc(ingredient.getPrice()) %> Ar</td>
+                                    <td><%= Html.esc(Money.format(ingredient.getPrice())) %></td>
                                     <% if (connected) { %>
                                     <td>
                                         <div class="dropdown">
@@ -157,7 +158,8 @@
                                                 <form method="POST" action="ingredient" class="d-inline" onsubmit="return confirm('Confirmer la suppression ?')">
                                                     <input type="hidden" name="_csrf" value="<%= Html.esc(Csrf.token(request)) %>">
                                                     <input type="hidden" name="id" value="<%= Html.esc(ingredient.getId()) %>">
-                                                    <button type="submit" class="dropdown-item"><i class="bx bx-trash me-1"></i> Supprimer</button>
+                                                    <button type="submit" class="dropdown-item"><i class="bx bx-trash me-1"></i>
+ Supprimer</button>
                                                 </form>
                                             </div>
                                         </div>

@@ -1,5 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ page import="util.Html" %>
+<%@ page import="util.Money" %>
 <%@ page import="util.Csrf" %>
 <%@ page import="dao.Recipe, dao.Vendeur, dao.RecipeSell, dao.User, java.util.ArrayList, util.SessionUtils" %>
 <%
@@ -86,7 +87,7 @@
                                             <select name="idRecipe" id="idRecipe" class="form-select" required>
                                                 <% for (Recipe recipe : (ArrayList<Recipe>) request.getAttribute("recipies")) { %>
                                                 <option value="<%= Html.esc(recipe.getId()) %>" <% if (recipe.getId() == recipeSell.getIdRecipe()) { %>selected<% } %>>
-                                                    <%= Html.esc(recipe.getTitle()) %> - <%= Html.esc(recipe.getPrice()) %>
+                                                    <%= Html.esc(recipe.getTitle()) %> - <%= Html.esc(Money.format(recipe.getPrice())) %>
                                                 </option>
                                                 <% } %>
                                             </select>
@@ -99,7 +100,7 @@
 
                                         <div class="mb-3">
                                             <label class="form-label" for="recipeSellArgent">Argent</label>
-                                            <input value="<%= Html.esc(recipeSell.getArgent()) %>" name="recipeSellArgent" type="number" min="0" step="0.01" class="form-control" id="recipeSellArgent" placeholder="Argent" required />
+                                            <input value="<%= Html.esc(Money.plain(recipeSell.getArgent())) %>" name="recipeSellArgent" type="number" min="0" step="0.01" class="form-control" id="recipeSellArgent" placeholder="Argent" required />
                                         </div>
 
                                         <div class="mb-3">

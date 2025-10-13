@@ -1,6 +1,7 @@
 
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ page import="util.Html" %>
+<%@ page import="util.Money" %>
 <%@ page import="util.Csrf" %>
 <%@ page import="dao.Recipe, dao.Category, dao.User, dao.RecipeSell, java.util.ArrayList, util.SessionUtils" %>
 <%@ page import="java.lang.Exception" %>
@@ -219,9 +220,9 @@
                                         </td>
                                         <td><%= Html.esc(recipeSell.getCombien()) %>
                                         </td> 
-                                        <td><%= Html.esc(recipeSell.getArgent()) %>
+                                        <td><%= Html.esc(Money.format(recipeSell.getArgent())) %>
                                         </td>
-                                        <td><%= Html.esc(recipeSell.getReste()) %></td>
+                                        <td><%= Html.esc(Money.format(recipeSell.getReste())) %></td>
                                         <td><%= Html.esc(recipeSell.getHumanFormattedCreatedDate()) %>
                                         </td> 
                                         <td>
@@ -244,7 +245,8 @@
                                                     <form method="POST" action="recipe-sell" class="d-inline" onsubmit="return confirm('Confirmer la suppression ?')">
                                                         <input type="hidden" name="_csrf" value="<%= Html.esc(Csrf.token(request)) %>">
                                                         <input type="hidden" name="id" value="<%= Html.esc(recipeSell.getId()) %>">
-                                                        <button type="submit" class="dropdown-item"><i class="bx bx-trash me-1"></i> Supprimer</button>
+                                                        <button type="submit" class="dropdown-item"><i class="bx bx-trash me-1"></i>
+ Supprimer</button>
                                                     </form>
                                                     <% } %>
                                                 </div>

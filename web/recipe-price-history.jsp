@@ -1,5 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ page import="util.Html" %>
+<%@ page import="util.Money" %>
 <%@ page import="dao.Recipe, dao.RecipePriceHistory, java.util.ArrayList, util.SessionUtils" %>
 <% boolean connected = SessionUtils.isUserConnected(request); %>
 
@@ -127,9 +128,9 @@
                                     </strong></td>
                                     <td><%= Html.esc(Recipe.findById(recipePriceHistory.getIdRecipe()).getTitle()) %> 
                                     </td> 
-                                    <td> Ar <%= Html.esc(recipePriceHistory.getPriceBefore()) %> 
+                                    <td><%= Html.esc(Money.format(recipePriceHistory.getPriceBefore())) %>
                                     </td>
-                                    <td> Ar <%= Html.esc(recipePriceHistory.getPriceAfter()) %> 
+                                    <td><%= Html.esc(Money.format(recipePriceHistory.getPriceAfter())) %>
                                     </td> 
                                     <td><%= Html.esc(recipePriceHistory.getHumanFormattedChangeDate()) %>
                                     </td> 

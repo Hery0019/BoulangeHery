@@ -1,5 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ page import="util.Html" %>
+<%@ page import="util.Money" %>
 <%@ page import="dao.Recipe, dao.Vendeur, dao.Ingredient, dao.Commission, dao.Perfume, java.util.ArrayList, util.SessionUtils" %>
 <% boolean connected = SessionUtils.isUserConnected(request); %>
 
@@ -159,7 +160,7 @@
                                     </td>
                                     <td><%= Html.esc(Recipe.findById(commission.getIdRecipe()).getTitle()) %>
                                     </td> 
-                                    <td><%= Html.esc(commission.getCommissionsAmount()) %>
+                                    <td><%= Html.esc(Money.format(commission.getCommissionsAmount())) %>
                                     </td>
                                     <td><%= Html.esc(commission.getFormattedcommissionDate()) %>
                                     </td> 
@@ -178,7 +179,7 @@
                                     totalCommissions += commission.getCommissionsAmount();
                                 }
                             %>
-                            <%= Html.esc(String.format("%.2f", totalCommissions)) %> 
+                            <%= Html.esc(Money.format(totalCommissions)) %> 
                         </h2>
                     </div>
                     <!--/ Basic Bootstrap Table -->

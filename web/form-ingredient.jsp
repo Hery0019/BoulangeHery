@@ -1,5 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ page import="util.Html" %>
+<%@ page import="util.Money" %>
 <%@ page import="util.Csrf" %>
 <%@ page import="dao.Ingredient, util.SessionUtils" %>
 <%
@@ -77,7 +78,7 @@
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label" for="ingredientPrice">Prix unitaire</label>
-                                            <input value="<%= Html.esc(ingredient.getPrice()) %>" name="ingredientPrice"
+                                            <input value="<%= Html.esc(Money.plain(ingredient.getPrice())) %>" name="ingredientPrice"
                                                    min="0" step="0.01" type="number" class="form-control" id="ingredientPrice"
                                                    placeholder="Prix unitaire"
                                                    required

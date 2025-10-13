@@ -1,5 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ page import="util.Html" %>
+<%@ page import="util.Money" %>
 <%@ page import="util.Csrf" %>
 <%@ page import="dao.Perfume, dao.Recipe, dao.Category, java.util.ArrayList, util.SessionUtils" %>
 <% boolean connected = SessionUtils.isUserConnected(request); %>
@@ -106,7 +107,7 @@
 
                                         <div class="mb-3">
                                             <label class="form-label" for="recipePrice">Prix</label>
-                                            <input value="<%= Html.esc(recipe.getPrice()) %>" name="recipePrice" type="number"
+                                            <input value="<%= Html.esc(Money.plain(recipe.getPrice())) %>" name="recipePrice" type="number"
                                                    class="form-control" id="recipePrice"
                                                    placeholder="Prix"
                                                    required
