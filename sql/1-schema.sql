@@ -136,3 +136,12 @@ CREATE TABLE recipe_price_history (
     FOREIGN KEY (id_recipe) REFERENCES recipe(id_recipe) ON DELETE CASCADE
 );
 
+
+-- Coût matière d'une recette (vue : suit les prix des ingrédients et la composition).
+CREATE OR REPLACE VIEW recipe_cost AS
+SELECT r.id_recipe,
+       COALESCE(SUM(ri.quantity * i.price), 0)::NUMERIC(12,2) AS cost
+FROM recipe r
+LEFT JOIN recipe_ingredient ri ON ri.id_recipe = r.id_recipe
+LEFT JOIN ingredient i ON i.id_ingredient = ri.id_ingredient
+GROUP BY r.id_recipe;

@@ -1,5 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ page import="util.Html" %>
+<%@ page import="util.Money" %>
 <%@ page import="util.Csrf" %>
 <%@ page import="dao.Recipe, dao.Step, java.util.ArrayList, util.SessionUtils" %>
 <%@ page import="dao.RecipeIngredient" %>
@@ -68,6 +69,40 @@
                         </div>
                     </div>
 
+                    <!-- Rentabilité : prix de vente, coût matière et marge (vue recipe_cost) -->
+                    <div class="card mb-3">
+                        <h5 class="card-header">Rentabilité</h5>
+                        <div class="card-body">
+                            <div class="row text-center">
+                                <div class="col">
+                                    <div class="text-muted small">Prix de vente</div>
+                                    <div class="h5 mb-0"><%= Html.esc(Money.format(recipe.getPrice())) %></div>
+                                </div>
+                                <div class="col">
+                                    <div class="text-muted small">Coût matière</div>
+                                    <div class="h5 mb-0"><%= Html.esc(Money.format(recipe.getCost())) %></div>
+                                </div>
+                                <div class="col">
+                                    <div class="text-muted small">Marge brute</div>
+                                    <div class="h5 mb-0 text-<%= recipe.getMargin() < 0 ? "danger" : (recipe.getMarginRate() < 20 ? "warning" : "success") %>">
+                                        <%= Html.esc(Money.format(recipe.getMargin())) %>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="text-muted small">Taux de marge</div>
+                                    <div class="h5 mb-0 text-<%= recipe.getMargin() < 0 ? "danger" : (recipe.getMarginRate() < 20 ? "warning" : "success") %>">
+                                        <%= Html.esc(String.format(java.util.Locale.FRENCH, "%.1f", recipe.getMarginRate())) %> %
+                                    </div>
+                                </div>
+                            </div>
+                            <% if (recipe.hasNoCost()) { %>
+                            <p class="text-muted mt-3 mb-0">Aucun ingrédient n'est associé à cette recette : le coût matière est inconnu.</p>
+                            <% } else if (recipe.getMargin() < 0) { %>
+                            <p class="text-danger mt-3 mb-0">Cette recette est vendue à perte : le coût des ingrédients dépasse le prix de vente.</p>
+                            <% } %>
+                        </div>
+                    </div>
+
                     <!-- Stock -->
                     <div class="card mb-3">
                         <h5 class="card-header">Stock</h5>
@@ -103,6 +138,8 @@
                                     <th>#</th>
                                     <th>Nom</th>
                                     <th>Quantité</th>
+                                    <th>Prix unitaire</th>
+                                    <th>Coût</th>
                                     <% if (SessionUtils.isUserConnected(request)) { %>
                                     <th>Actions</th>
                                     <% } %>
@@ -117,6 +154,8 @@
                                     </td>
                                     <td><%= Html.esc(recipeIngredient.getQuantity()) %> <%= Html.esc(recipeIngredient.getIngredientUnit()) %>
                                     </td>
+                                    <td><%= Html.esc(Money.format(recipeIngredient.getIngredientPrice())) %></td>
+                                    <td><%= Html.esc(Money.format(recipeIngredient.getLineCost())) %></td>
                                     <% if (SessionUtils.isUserConnected(request)) { %>
                                     <td>
                                         <div class="dropdown">
@@ -134,7 +173,8 @@
                                                     <input type="hidden" name="_csrf" value="<%= Html.esc(Csrf.token(request)) %>">
                                                     <input type="hidden" name="idRecipe" value="<%= Html.esc(recipeIngredient.getIdRecipe()) %>">
                                                     <input type="hidden" name="idIngredient" value="<%= Html.esc(recipeIngredient.getIdIngredient()) %>">
-                                                    <button type="submit" class="dropdown-item"><i class="bx bx-trash me-1"></i> Supprimer</button>
+                                                    <button type="submit" class="dropdown-item"><i class="bx bx-trash me-1"></i>
+ Supprimer</button>
                                                 </form>
                                             </div>
                                         </div>
@@ -143,6 +183,13 @@
                                 </tr>
                                 <% } %>
                                 </tbody>
+                                <tfoot>
+                                <tr>
+                                    <td colspan="3" class="text-end fw-bold">Coût matière total</td>
+                                    <td class="fw-bold"><%= Html.esc(Money.format(recipe.getCost())) %></td>
+                                    <% if (SessionUtils.isUserConnected(request)) { %><td></td><% } %>
+                                </tr>
+                                </tfoot>
                             </table>
                         </div>
                     </div>

@@ -12,6 +12,8 @@ public class RecipeIngredient {
     private String ingredientName;
     private String ingredientUnit;
     private double quantity;
+    /** Prix unitaire de l'ingrédient, repris de la table ingredient par les jointures. */
+    private double ingredientPrice;
 
     public RecipeIngredient() {}
 
@@ -55,13 +57,15 @@ public class RecipeIngredient {
             resultSet = statement.executeQuery();
 
             while (resultSet.next()) {
-                recipeIngredients.add(new RecipeIngredient(
+                RecipeIngredient recipeIngredient = new RecipeIngredient(
                     resultSet.getInt("id_recipe"),
                     resultSet.getInt("id_ingredient"),
                     resultSet.getString("ingredient_name"),
                     resultSet.getString("unit"),
                     resultSet.getDouble("quantity")
-                ));
+                );
+                recipeIngredient.setIngredientPrice(resultSet.getDouble("price"));
+                recipeIngredients.add(recipeIngredient);
             }
         } finally {
             if (resultSet != null) resultSet.close();
@@ -95,6 +99,7 @@ public class RecipeIngredient {
                 ingredientName = resultSet.getString("ingredient_name");
                 ingredientUnit = resultSet.getString("unit");
                 quantity = resultSet.getDouble("quantity");
+                ingredientPrice = resultSet.getDouble("price");
 
                 foundRecipeIngredient = true;
             }
@@ -129,6 +134,7 @@ public class RecipeIngredient {
                 ingredientName = resultSet.getString("ingredient_name");
                 ingredientUnit = resultSet.getString("unit");
                 quantity = resultSet.getDouble("quantity");
+                ingredientPrice = resultSet.getDouble("price");
 
                 foundRecipeIngredient = true;
             }
@@ -269,6 +275,19 @@ public class RecipeIngredient {
 
     public String getIngredientUnit() {
         return ingredientUnit;
+    }
+
+    public double getIngredientPrice() {
+        return ingredientPrice;
+    }
+
+    public void setIngredientPrice(double ingredientPrice) {
+        this.ingredientPrice = ingredientPrice;
+    }
+
+    /** Coût de cette ligne dans la recette : quantité x prix unitaire. */
+    public double getLineCost() {
+        return quantity * ingredientPrice;
     }
 
     public void setIngredientUnit(String ingredientUnit) {

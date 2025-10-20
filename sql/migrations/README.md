@@ -15,3 +15,4 @@
 | 005 | Stock unique par recette et créé avec elle, ventes modifiables/supprimables sans fausser stock ni commissions, cook_time à la suppression d'étape |
 | 006 | Contraintes d'unicité (email utilisateur/vendeur, nom de catégorie/parfum, ingrédient+unité, numéro d'étape par recette) |
 | 007 | `ingredient.price` en NUMERIC(10,2) (l'INT arrondissait les prix unitaires) |
+| 008 | Vue `recipe_cost` : coût matière par recette |

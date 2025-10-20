@@ -238,6 +238,17 @@
                                             <p><strong>Préparation :</strong> <%= Html.esc(recipe.getHumanFormattedCookTime()) %></p>
                                             <p><strong>Parfum :</strong> <%= Html.esc((new Perfume().findById(recipe.getIdPerfume())).getName()) %></p>
                                             <p><strong>Prix :</strong> <%= Html.esc(Money.format(recipe.getPrice())) %></p>
+                                            <% if (recipe.hasNoCost()) { %>
+                                            <p><strong>Marge :</strong> <span class="text-muted">aucun ingrédient renseigné</span></p>
+                                            <% } else { %>
+                                            <p><strong>Coût matière :</strong> <%= Html.esc(Money.format(recipe.getCost())) %></p>
+                                            <p><strong>Marge :</strong>
+                                                <span class="badge bg-label-<%= recipe.getMargin() < 0 ? "danger" : (recipe.getMarginRate() < 20 ? "warning" : "success") %>">
+                                                    <%= Html.esc(Money.format(recipe.getMargin())) %>
+                                                    (<%= Html.esc(String.format(java.util.Locale.FRENCH, "%.0f", recipe.getMarginRate())) %> %)
+                                                </span>
+                                            </p>
+                                            <% } %>
                                             <p><strong>Créé par :</strong> <%= Html.esc(recipe.getCreatedBy()) %></p>
                                             <p><strong>Le</strong> <%= Html.esc(recipe.getHumanFormattedCreatedDate()) %></p>
 

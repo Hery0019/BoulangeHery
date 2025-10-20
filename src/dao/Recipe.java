@@ -24,6 +24,8 @@ public class Recipe {
     private LocalDate createdDate = LocalDate.now();
     private double price = 0.0;
     private String picture = "";
+    /** Coût matière, lu dans la vue recipe_cost (jamais saisi). */
+    private double cost = 0.0;
 
     private static final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
     private static final DateTimeFormatter humanTimeFormatter = new DateTimeFormatterBuilder()
@@ -37,6 +39,10 @@ public class Recipe {
     private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter humanDateFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy",
             Locale.FRENCH);
+
+    /** Recette et son coût matière : la vue fournit une ligne par recette. */
+    private static final String SELECT_WITH_COST =
+            "SELECT r.*, c.cost FROM recipe r JOIN recipe_cost c ON c.id_recipe = r.id_recipe";
 
     public Recipe() {
     }
@@ -104,7 +110,7 @@ public class Recipe {
 
         try {
             connection = DBConnection.getPostgesConnection();
-            statement = connection.prepareStatement("SELECT * FROM recipe");
+            statement = connection.prepareStatement(SELECT_WITH_COST);
             resultSet = statement.executeQuery();
 
             while (resultSet.next()) {
@@ -119,8 +125,10 @@ public class Recipe {
                 double price = resultSet.getDouble("price");
                 String picture = resultSet.getString("picture");
 
-                recipes.add(
-                        new Recipe(id, title, description, idCategory, idPerfume, cookTime, createdBy, createdDate, price, picture));
+                Recipe recipe = new Recipe(id, title, description, idCategory, idPerfume, cookTime, createdBy,
+                        createdDate, price, picture);
+                recipe.setCost(resultSet.getDouble("cost"));
+                recipes.add(recipe);
             }
         } catch (Exception e) {
             throw e;
@@ -147,7 +155,7 @@ public class Recipe {
         try {
             connection = DBConnection.getPostgesConnection();
             statement = connection.prepareStatement(
-                    "SELECT * FROM recipe WHERE id_recipe = ?");
+                    SELECT_WITH_COST + " WHERE r.id_recipe = ?");
             statement.setInt(1, id);
             resultSet = statement.executeQuery();
 
@@ -162,6 +170,7 @@ public class Recipe {
                 createdDate = resultSet.getDate("created_date").toLocalDate();
                 price = resultSet.getDouble("price");
                 picture = resultSet.getString("picture");
+                cost = resultSet.getDouble("cost");
             }
         } catch (Exception e) {
             throw e;
@@ -186,7 +195,7 @@ public class Recipe {
         try {
             connection = DBConnection.getPostgesConnection();
             statement = connection.prepareStatement(
-                    "SELECT * FROM recipe WHERE id_recipe = ?");
+                    SELECT_WITH_COST + " WHERE r.id_recipe = ?");
             statement.setInt(1, id);
             resultSet = statement.executeQuery();
     
@@ -202,6 +211,7 @@ public class Recipe {
                 recipe.setCreatedDate(resultSet.getDate("created_date").toLocalDate());
                 recipe.setPrice(resultSet.getDouble("price"));
                 recipe.setPicture(resultSet.getString("picture"));
+                recipe.setCost(resultSet.getDouble("cost"));
                 return recipe;
             }
         } catch (Exception e) {
@@ -305,10 +315,9 @@ public class Recipe {
             connection = DBConnection.getPostgesConnection();
 
             StringBuilder sql = new StringBuilder(
-                    "SELECT r.* " +
-                            "FROM recipe r " +
-                            "WHERE title ILIKE ? " +
-                            "AND recipe_description ILIKE ?");
+                    SELECT_WITH_COST +
+                            " WHERE title ILIKE ?" +
+                            " AND recipe_description ILIKE ?");
 
             if (searchIdCategory != 0) {
                 sql.append(" AND id_category = ?");
@@ -405,8 +414,10 @@ public class Recipe {
                 double price = resultSet.getDouble("price");
                 String picture = resultSet.getString("picture");
 
-                recipes.add(new Recipe(id, title, description, idCategory, idPerfume, cookTime, createdBy, createdDate,
-                        price, picture));
+                Recipe recipe = new Recipe(id, title, description, idCategory, idPerfume, cookTime, createdBy,
+                        createdDate, price, picture);
+                recipe.setCost(resultSet.getDouble("cost"));
+                recipes.add(recipe);
             }
         } catch (Exception e) {
             throw e;
@@ -469,6 +480,30 @@ public class Recipe {
 
     public int getIdPerfume() {
         return idPerfume;
+    }
+
+    /** Coût matière de la recette (somme quantité x prix unitaire des ingrédients). */
+    public double getCost() {
+        return cost;
+    }
+
+    public void setCost(double cost) {
+        this.cost = cost;
+    }
+
+    /** Marge brute : prix de vente moins coût matière. Négative si la recette est vendue à perte. */
+    public double getMargin() {
+        return price - cost;
+    }
+
+    /** Taux de marge en pourcentage du prix de vente ; 0 si le prix n'est pas renseigné. */
+    public double getMarginRate() {
+        return price == 0.0 ? 0.0 : getMargin() / price * 100.0;
+    }
+
+    /** Vrai tant qu'aucun ingrédient n'a été associé : la marge affichée n'aurait pas de sens. */
+    public boolean hasNoCost() {
+        return cost == 0.0;
     }
 
     public double getPrice() {

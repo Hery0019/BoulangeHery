@@ -137,6 +137,17 @@ BEGIN
     EXCEPTION WHEN foreign_key_violation OR restrict_violation THEN NULL;
     END;
     RAISE NOTICE 'OK  recette vendue protégée';
+
+    -- 13. Coût matière : la vue suit la composition et le prix des ingrédients
+    -- Baguette = 500 g de farine à 1,50 + 10 g de levure à 0,02.
+    ASSERT (SELECT cost FROM recipe_cost WHERE id_recipe = 1) = 750.20,
+        'coût matière de la baguette (obtenu ' || (SELECT cost FROM recipe_cost WHERE id_recipe = 1) || ')';
+    UPDATE ingredient SET price = price * 2 WHERE id_ingredient = 1; -- la farine double
+    ASSERT (SELECT cost FROM recipe_cost WHERE id_recipe = 1) = 1500.20,
+        'coût matière recalculé après changement de prix';
+    ASSERT (SELECT cost FROM recipe_cost WHERE id_recipe = v_recipe) IS NULL,
+        'la recette supprimée ne figure plus dans la vue';
+    RAISE NOTICE 'OK  coût matière';
 END $$;
 
 ROLLBACK;
