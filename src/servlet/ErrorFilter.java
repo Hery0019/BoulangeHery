@@ -37,6 +37,12 @@ public class ErrorFilter implements Filter {
                 LOG.log(Level.SEVERE, "Erreur après envoi de la réponse sur " + describe(req), e);
                 throw e;
             }
+            if (isTooLarge(e)) {
+                LOG.log(Level.INFO, "Téléversement refusé (trop volumineux) sur " + describe(req));
+                resp.sendError(HttpServletResponse.SC_BAD_REQUEST,
+                        "Fichier trop volumineux : 5 Mo maximum par image.");
+                return;
+            }
             if (root instanceof BadRequestException) {
                 LOG.log(Level.INFO, "Requête invalide sur " + describe(req) + " : " + root.getMessage());
                 resp.sendError(HttpServletResponse.SC_BAD_REQUEST, root.getMessage());
@@ -45,6 +51,20 @@ public class ErrorFilter implements Filter {
             LOG.log(Level.SEVERE, "Erreur non gérée sur " + describe(req), e);
             resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
+    }
+
+    /**
+     * Dépassement des limites de {@code @MultipartConfig} : Tomcat le signale
+     * par une exception de sa bibliothèque de téléversement, identifiée ici par
+     * son nom pour ne pas dépendre d'un paquet interne au conteneur.
+     */
+    private static boolean isTooLarge(Throwable t) {
+        for (Throwable cause = t; cause != null; cause = cause.getCause() == cause ? null : cause.getCause()) {
+            if (cause.getClass().getSimpleName().contains("SizeLimitExceeded")) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static Throwable rootCause(Throwable t) {

@@ -250,7 +250,7 @@ public class Recipe {
             statement.setString(6, createdBy);
             statement.setDate(7, Date.valueOf(createdDate));
             statement.setDouble(8, price);
-            statement.setString(9, "assets/img/recipies/croissants.jpg");
+            statement.setString(9, picture); // null si aucune photo n'a été envoyée
             statement.executeUpdate();
             connection.commit();
         } catch (Exception e) {
@@ -271,7 +271,9 @@ public class Recipe {
             // cook_time n'est pas modifiable ici : il est recalculé par trigger depuis les étapes.
             statement = connection.prepareStatement(
                     "UPDATE recipe"
-                            + " SET title = ?, recipe_description = ?, id_category = ?, id_perfume = ?, created_by = ?, created_date = ?, price = ? "
+                            + " SET title = ?, recipe_description = ?, id_category = ?, id_perfume = ?, created_by = ?, created_date = ?, price = ?,"
+                            // photo laissée telle quelle quand le formulaire n'en envoie pas de nouvelle
+                            + " picture = COALESCE(NULLIF(?, ''), picture)"
                             + " WHERE id_recipe = ?");
             statement.setString(1, title);
             statement.setString(2, description);
@@ -280,7 +282,8 @@ public class Recipe {
             statement.setString(5, createdBy);
             statement.setDate(6, Date.valueOf(createdDate));
             statement.setDouble(7, price);
-            statement.setInt(8, id);
+            statement.setString(8, picture);
+            statement.setInt(9, id);
             statement.executeUpdate();
             connection.commit();
         } catch (Exception e) {
@@ -572,6 +575,14 @@ public class Recipe {
 
     public void setCreatedDate(LocalDate createdDate) {
         this.createdDate = createdDate;
+    }
+
+    /**
+     * Chemin de l'image à afficher : la photo de la recette, ou une image
+     * neutre tant qu'aucune n'a été téléversée.
+     */
+    public String getPictureUrl() {
+        return picture == null || picture.isBlank() ? "assets/img/recipe-placeholder.svg" : picture;
     }
 
     public String getPicture() {

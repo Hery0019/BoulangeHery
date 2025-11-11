@@ -44,7 +44,7 @@ public class AuthFilter implements Filter {
         boolean readOnly = "GET".equals(method) || "HEAD".equals(method);
         boolean mutation = !readOnly || "delete".equals(req.getParameter("action"));
 
-        if (path.startsWith("/assets/")) {
+        if (path.startsWith("/assets/") || path.startsWith("/pictures/")) {
             chain.doFilter(request, response);
             return;
         }

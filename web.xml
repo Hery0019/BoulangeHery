@@ -159,6 +159,11 @@
     <servlet-name>RecipeStockServlet</servlet-name>
   </servlet>
 
+  <servlet>
+    <servlet-class>servlet.PictureServlet</servlet-class>
+    <servlet-name>PictureServlet</servlet-name>
+  </servlet>
+
 
 
   <!-- Servlet mapping -->
@@ -260,6 +265,12 @@
   <servlet-mapping>
     <servlet-name>RecipeStockServlet</servlet-name>
     <url-pattern>/recipe-stock</url-pattern>
+  </servlet-mapping>
+
+  <!-- Photos téléversées, stockées hors du WAR (voir util.Pictures) -->
+  <servlet-mapping>
+    <servlet-name>PictureServlet</servlet-name>
+    <url-pattern>/pictures/*</url-pattern>
   </servlet-mapping>
 
   <!-- Sessions : expiration après 30 min d'inactivité, cookie inaccessible au JavaScript.

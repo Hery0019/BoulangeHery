@@ -55,6 +55,7 @@
                                     <form
                                             method="POST"
                                             action="recipe"
+                                            enctype="multipart/form-data"
                                     >
                                         <input type="hidden" name="_csrf" value="<%= Html.esc(Csrf.token(request)) %>">
                                         <input type="hidden" name="action"
@@ -105,6 +106,22 @@
                                             </select>
                                         </div> 
 
+                                        <div class="mb-3">
+                                            <label class="form-label" for="recipePicture">Photo</label>
+                                            <input name="recipePicture" type="file" accept="image/*"
+                                                   class="form-control" id="recipePicture"/>
+                                            <div class="form-text">
+                                                <% if ("update".equals(request.getAttribute("action"))) { %>
+                                                Laisser vide pour conserver la photo actuelle.
+                                                <% } else { %>
+                                                Facultatif : jpg, png, webp ou gif, 5 Mo maximum.
+                                                <% } %>
+                                            </div>
+                                            <% if (recipe.getId() != 0) { %>
+                                            <img src="<%= Html.esc(recipe.getPictureUrl()) %>" alt="Photo actuelle"
+                                                 class="mt-2 rounded object-fit-cover" style="height: 90px;">
+                                            <% } %>
+                                        </div>
                                         <div class="mb-3">
                                             <label class="form-label" for="recipePrice">Prix</label>
                                             <input value="<%= Html.esc(Money.plain(recipe.getPrice())) %>" name="recipePrice" type="number"

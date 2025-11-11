@@ -199,7 +199,7 @@
                                     <div class="card h-100 d-flex flex-column">
 
                                         <!-- Image en haut de la carte -->
-                                        <img src="<%= Html.esc(Recipe.findById(review.getIdRecipe()).getPicture()) %>" alt="Image du plat" class="card-img-top object-fit-cover" style="height: 200px;">
+                                        <img src="<%= Html.esc(Recipe.findById(review.getIdRecipe()).getPictureUrl()) %>" alt="Image du plat" class="card-img-top object-fit-cover" style="height: 200px;">
 
                                         <div class="card-body d-flex flex-column">
                                             <div class="card-subtitle text-muted mb-3 fw-bold">

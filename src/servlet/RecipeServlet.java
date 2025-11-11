@@ -7,6 +7,7 @@ import java.util.ArrayList;
 
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -17,7 +18,14 @@ import dao.Ingredient;
 import dao.Perfume;
 import dao.Recipe;
 import util.Params;
+import util.Pictures;
 
+/**
+ * {@code MultipartConfig} : le formulaire de recette envoie une photo. Tomcat
+ * n'analyse le corps multipart (et n'expose donc les paramètres, jeton CSRF
+ * compris) que si la servlet le déclare.
+ */
+@MultipartConfig(fileSizeThreshold = 512 * 1024, maxFileSize = 5 * 1024 * 1024, maxRequestSize = 6 * 1024 * 1024)
 public class RecipeServlet extends HttpServlet {
 
     @Override
@@ -87,6 +95,8 @@ public class RecipeServlet extends HttpServlet {
         LocalDate createdDate = Params.requiredDate(req, "recipeCreationDate");
         Recipe recipe = new Recipe(id, title, description, idCategory, idPerfume, cookTime, createdBy, createdDate,
                 price);
+        // Photo facultative : absente, la recette garde l'image qu'elle avait.
+        recipe.setPicture(Pictures.store(req, "recipePicture"));
 
         try {
             if ("update".equals(action)) {
