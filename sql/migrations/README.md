@@ -16,3 +16,4 @@
 | 006 | Contraintes d'unicité (email utilisateur/vendeur, nom de catégorie/parfum, ingrédient+unité, numéro d'étape par recette) |
 | 007 | `ingredient.price` en NUMERIC(10,2) (l'INT arrondissait les prix unitaires) |
 | 008 | Vue `recipe_cost` : coût matière par recette |
+| 009 | Index sur les clés étrangères et les colonnes de filtre |
