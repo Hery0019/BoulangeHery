@@ -4,7 +4,7 @@
 <%@ page import="util.Csrf" %>
 <%@ page import="dao.Ingredient, util.SessionUtils" %>
 <%
-    boolean connected = SessionUtils.isUserConnected(request);
+    boolean connected = SessionUtils.canManageCatalog(request);
     Ingredient ingredient = (Ingredient) request.getAttribute("ingredient");
 %>
 

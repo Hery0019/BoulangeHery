@@ -2,7 +2,7 @@
 <%@ page import="util.Html" %>
 <%@ page import="util.Csrf" %>
 <%@ page import="dao.Category, util.SessionUtils" %>
-<% boolean connected = SessionUtils.isUserConnected(request); %>
+<% boolean connected = SessionUtils.canManageCatalog(request); %>
 <% Category category = (Category) request.getAttribute("category"); %>
 
 <%@include file="header.jsp"%>

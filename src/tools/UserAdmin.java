@@ -3,6 +3,7 @@ package tools;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.Locale;
 
 import dao.DBConnection;
 import dao.User;
@@ -14,7 +15,9 @@ import util.PasswordHasher;
  *
  * <pre>
  *   java -cp "WEB-INF/classes;lib/*" tools.UserAdmin hash &lt;mot de passe&gt;
- *   java -cp "WEB-INF/classes;lib/*" tools.UserAdmin create &lt;prénom&gt; &lt;nom&gt; &lt;email&gt; &lt;mot de passe&gt;
+ *   java -cp "WEB-INF/classes;lib/*" tools.UserAdmin create &lt;prénom&gt; &lt;nom&gt; &lt;email&gt; &lt;mot de passe&gt; [rôle]
+ *   java -cp "WEB-INF/classes;lib/*" tools.UserAdmin role &lt;email&gt; &lt;ADMIN|BOULANGER|VENDEUR&gt;
+ *   java -cp "WEB-INF/classes;lib/*" tools.UserAdmin list
  *   java -cp "WEB-INF/classes;lib/*" tools.UserAdmin rehash
  * </pre>
  *
@@ -37,14 +40,46 @@ public class UserAdmin {
                 break;
             case "create":
                 requireArgs(args, 5);
-                int id = User.create(args[1], args[2], args[3], args[4]);
-                System.out.println("Utilisateur créé, id_user = " + id);
+                // Rôle facultatif en 5e argument, ADMIN par défaut.
+                String role = args.length > 5 ? args[5].toUpperCase(Locale.ROOT) : User.ADMIN;
+                int id = User.create(args[1], args[2], args[3], args[4], role);
+                System.out.println("Utilisateur créé, id_user = " + id + ", rôle " + role);
+                break;
+            case "role":
+                requireArgs(args, 3);
+                System.out.println(changeRole(args[1], args[2].toUpperCase(Locale.ROOT))
+                        ? "Rôle mis à jour."
+                        : "Aucun compte avec cet email.");
+                break;
+            case "list":
+                listUsers();
                 break;
             case "rehash":
                 System.out.println(rehashPlaintextPasswords() + " mot(s) de passe converti(s).");
                 break;
             default:
                 usage();
+        }
+    }
+
+    /** Change le rôle d'un compte ; renvoie faux si l'email est inconnu. */
+    private static boolean changeRole(String email, String role) throws Exception {
+        if (!User.ADMIN.equals(role) && !User.BOULANGER.equals(role) && !User.VENDEUR.equals(role)) {
+            throw new IllegalArgumentException("Rôle inconnu : " + role);
+        }
+        try (Connection connection = DBConnection.getPostgesConnection();
+                PreparedStatement statement = connection.prepareStatement(
+                        "UPDATE gotta_taste_user SET role = ? WHERE email = ?")) {
+            statement.setString(1, role);
+            statement.setString(2, email);
+            return statement.executeUpdate() > 0;
+        }
+    }
+
+    private static void listUsers() throws Exception {
+        for (User user : User.all()) {
+            System.out.printf("%-4d %-30s %-30s %s%n",
+                    user.getId(), user.getEmail(), user.getFullName(), user.getRole());
         }
     }
 
@@ -82,7 +117,9 @@ public class UserAdmin {
     private static void usage() {
         System.err.println("Usage :");
         System.err.println("  UserAdmin hash <mot de passe>");
-        System.err.println("  UserAdmin create <prénom> <nom> <email> <mot de passe>");
+        System.err.println("  UserAdmin create <prénom> <nom> <email> <mot de passe> [ADMIN|BOULANGER|VENDEUR]");
+        System.err.println("  UserAdmin role <email> <ADMIN|BOULANGER|VENDEUR>");
+        System.err.println("  UserAdmin list");
         System.err.println("  UserAdmin rehash");
     }
 }

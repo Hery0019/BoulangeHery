@@ -6,7 +6,7 @@
 <%@ page import="dao.Recipe, dao.Category, dao.User, dao.RecipeSell, java.util.ArrayList, util.SessionUtils" %>
 <%@ page import="java.lang.Exception" %>
 
-<% boolean connected = SessionUtils.isUserConnected(request); %>
+<% boolean connected = SessionUtils.canSell(request); %>
 
 <%@include file="header.jsp"%>
 

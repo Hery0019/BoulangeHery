@@ -4,7 +4,7 @@
 <%@ page import="util.Csrf" %>
 <%@ page import="dao.Ingredient, java.util.ArrayList, util.SessionUtils" %>
 <%
-    boolean connected = SessionUtils.isUserConnected(request);
+    boolean connected = SessionUtils.canManageCatalog(request);
     String errorMessage = (String) request.getAttribute("errorMessage");
 %>
 

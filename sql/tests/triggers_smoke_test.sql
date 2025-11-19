@@ -148,6 +148,15 @@ BEGIN
     ASSERT (SELECT cost FROM recipe_cost WHERE id_recipe = v_recipe) IS NULL,
         'la recette supprimée ne figure plus dans la vue';
     RAISE NOTICE 'OK  coût matière';
+
+    -- 14. Rôles : seuls les trois rôles connus sont acceptés
+    BEGIN
+        INSERT INTO gotta_taste_user (firstname, lastname, email, user_password, role)
+        VALUES ('X', 'Y', 'role@test', 'pbkdf2$1$a$b', 'PATRON');
+        RAISE EXCEPTION 'un rôle inconnu aurait dû être refusé';
+    EXCEPTION WHEN check_violation THEN NULL;
+    END;
+    RAISE NOTICE 'OK  rôles des comptes';
 END $$;
 
 ROLLBACK;

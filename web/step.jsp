@@ -2,7 +2,7 @@
 <%@ page import="util.Html" %>
 <%@ page import="util.Csrf" %>
 <%@ page import="dao.Step, dao.Recipe, java.util.ArrayList, util.SessionUtils" %>
-<% boolean connected = SessionUtils.isUserConnected(request); %>
+<% boolean connected = SessionUtils.canManageCatalog(request); %>
 
 <%@include file="header.jsp"%>
 
@@ -158,7 +158,8 @@
                                                 <form method="POST" action="step" class="d-inline" onsubmit="return confirm('Confirmer la suppression ?')">
                                                     <input type="hidden" name="_csrf" value="<%= Html.esc(Csrf.token(request)) %>">
                                                     <input type="hidden" name="id" value="<%= Html.esc(step.getId()) %>">
-                                                    <button type="submit" class="dropdown-item"><i class="bx bx-trash me-1"></i> Supprimer</button>
+                                                    <button type="submit" class="dropdown-item"><i class="bx bx-trash me-1"></i>
+ Supprimer</button>
                                                 </form>
                                             </div>
                                         </div>

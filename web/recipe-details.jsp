@@ -6,7 +6,7 @@
 <%@ page import="dao.RecipeIngredient" %>
 <%@ page import="dao.RecipeStock" %>
 <%
-    boolean connected = SessionUtils.isUserConnected(request);
+    boolean connected = SessionUtils.canManageCatalog(request);
     Recipe recipe = (Recipe) request.getAttribute("recipe");
     ArrayList<Step> steps = (ArrayList<Step>) request.getAttribute("steps");
     ArrayList<RecipeIngredient> recipeIngredients = (ArrayList<RecipeIngredient>) request.getAttribute("recipeIngredients");
@@ -127,7 +127,7 @@
                     <!-- Recipe's ingredients table -->
                     <div class="card mb-3">
                         <h5 class="card-header">Ingrédients de la recette</h5>
-                        <% if (SessionUtils.isUserConnected(request)) { %>
+                        <% if (connected) { %>
                         <div class="card-body"><a href="form-recipe-ingredient?idRecipe=<%= Html.esc(recipe.getId()) %>" type="button" class="btn btn-success">Ajouter</a>
                         </div>
                         <% } %>
@@ -140,7 +140,7 @@
                                     <th>Quantité</th>
                                     <th>Prix unitaire</th>
                                     <th>Coût</th>
-                                    <% if (SessionUtils.isUserConnected(request)) { %>
+                                    <% if (connected) { %>
                                     <th>Actions</th>
                                     <% } %>
                                 </tr>
@@ -156,7 +156,7 @@
                                     </td>
                                     <td><%= Html.esc(Money.format(recipeIngredient.getIngredientPrice())) %></td>
                                     <td><%= Html.esc(Money.format(recipeIngredient.getLineCost())) %></td>
-                                    <% if (SessionUtils.isUserConnected(request)) { %>
+                                    <% if (connected) { %>
                                     <td>
                                         <div class="dropdown">
                                             <button type="button" class="btn p-0 dropdown-toggle hide-arrow"
@@ -187,7 +187,7 @@
                                 <tr>
                                     <td colspan="3" class="text-end fw-bold">Coût matière total</td>
                                     <td class="fw-bold"><%= Html.esc(Money.format(recipe.getCost())) %></td>
-                                    <% if (SessionUtils.isUserConnected(request)) { %><td></td><% } %>
+                                    <% if (connected) { %><td></td><% } %>
                                 </tr>
                                 </tfoot>
                             </table>
@@ -199,7 +199,7 @@
                     <div class="card">
                         <h5 class="card-header">Etapes de la recette</h5>
                         <div class="card-body">
-                            <% if (SessionUtils.isUserConnected(request)) { %>
+                            <% if (connected) { %>
                             <a href="form-step?idRecipe=<%= Html.esc(recipe.getId()) %>" type="button" class="btn btn-success mb-4">Ajouter</a>
                             <% } %>
                             <div class="list-group">
@@ -210,7 +210,7 @@
                                         <h6 class="mb-2"><%= Html.esc(step.getHumanFormattedCookTime()) %></h6>
                                     </div>
                                     <p class="mb-1 w-50"><%= Html.esc(step.getInstruction()) %></p>
-                                    <% if (SessionUtils.isUserConnected(request)) { %>
+                                    <% if (connected) { %>
                                     <div class="actions">
                                         <a href="form-step?action=update&id=<%= Html.esc(step.getId()) %>" type="button"
                                         class="update-btn btn rounded-pill btn-icon btn-outline-secondary me-2">

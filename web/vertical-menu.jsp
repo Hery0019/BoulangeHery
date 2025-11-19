@@ -1,7 +1,12 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ page import="util.Html" %>
+<%@ page import="util.SessionUtils" %>
 <%
     String activeMenuItem = (String) request.getAttribute("activeMenuItem");
+    // Le menu ne propose que ce que le rôle autorise ; le contrôle réel reste dans AuthFilter.
+    boolean menuCatalog = SessionUtils.canManageCatalog(request);
+    boolean menuSales = SessionUtils.canSell(request);
+    boolean menuVisitor = !SessionUtils.isUserConnected(request);
 %>
 
 <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
@@ -41,53 +46,65 @@
         </li>
 
         <!-- Recipe Price Histories -->
+        <% if (menuCatalog) { %>
         <li class="menu-item <% if (activeMenuItem.equals("recipe-price-history")) { %>active<% } %>">
             <a href="recipe-price-history" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-history"></i>
                 <div data-i18n="Recipies-price-history">Historique des prix</div>
             </a>
         </li>
+        <% } %>
 
         <!-- Recipe Sells -->
+        <% if (menuSales) { %>
         <li class="menu-item <% if (activeMenuItem.equals("recipe-sell")) { %>active<% } %>">
             <a href="recipe-sell" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-cart"></i>
                 <div data-i18n="Recipies-sell">Vente de Recettes</div>
             </a>
         </li>
+        <% } %>
 
         <!-- Commission -->
+        <% if (menuSales) { %>
         <li class="menu-item <% if (activeMenuItem.equals("commission")) { %>active<% } %>">
             <a href="commission" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-dollar"></i>
                 <div data-i18n="Commission">Commissions</div>
             </a>
         </li>
+        <% } %>
 
         <!-- Category -->
+        <% if (menuCatalog || menuVisitor) { %>
         <li class="menu-item <% if (activeMenuItem.equals("category")) { %>active<% } %>">
             <a href="category" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-category"></i>
                 <div data-i18n="Categories">Catégories</div>
             </a>
         </li>
+        <% } %>
 
 
         <!-- Ingredient -->
+        <% if (menuCatalog || menuVisitor) { %>
         <li class="menu-item <% if (activeMenuItem.equals("ingredient")) { %>active<% } %>">
             <a href="ingredient" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-dish"></i>
                 <div data-i18n="Ingredients">Ingrédients</div>
             </a>
         </li>
+        <% } %>
 
         <!-- Step -->
+        <% if (menuCatalog || menuVisitor) { %>
         <li class="menu-item <% if (activeMenuItem.equals("step")) { %>active<% } %>">
             <a href="step" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-book-open"></i>
                 <div data-i18n="Steps">Etapes</div>
             </a>
         </li>
+        <% } %>
 
     </ul>
 </aside>

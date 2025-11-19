@@ -7,7 +7,7 @@
 <%@ page import="dao.RecipeIngredient" %>
 <%@ page import="util.SessionUtils" %>
 <%
-    boolean connected = SessionUtils.isUserConnected(request);
+    boolean connected = SessionUtils.canManageCatalog(request);
     String errorMessage = (String) request.getAttribute("errorMessage");
     RecipeIngredient recipeIngredient = (RecipeIngredient) request.getAttribute("recipeIngredient");
     Recipe recipe = (Recipe) request.getAttribute("recipe");

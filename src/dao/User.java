@@ -16,10 +16,18 @@ import util.PasswordHasher;
  */
 public class User {
 
+    /** Tous les droits. */
+    public static final String ADMIN = "ADMIN";
+    /** Catalogue : recettes, étapes, ingrédients, catégories, stock. */
+    public static final String BOULANGER = "BOULANGER";
+    /** Caisse : ventes et commissions. */
+    public static final String VENDEUR = "VENDEUR";
+
     private int id;
     private String firstname;
     private String lastname;
     private String email;
+    private String role = ADMIN;
 
     public User(int id, String firstname, String lastname, String email) {
         this.id = id;
@@ -28,11 +36,16 @@ public class User {
         this.email = email;
     }
 
+    public User(int id, String firstname, String lastname, String email, String role) {
+        this(id, firstname, lastname, email);
+        this.role = role;
+    }
+
     public static ArrayList<User> all() throws Exception {
         ArrayList<User> users = new ArrayList<>();
         try (Connection connection = DBConnection.getPostgesConnection();
                 PreparedStatement statement = connection.prepareStatement(
-                        "SELECT id_user, firstname, lastname, email FROM gotta_taste_user ORDER BY id_user");
+                        "SELECT id_user, firstname, lastname, email, role FROM gotta_taste_user ORDER BY id_user");
                 ResultSet resultSet = statement.executeQuery()) {
             while (resultSet.next()) {
                 users.add(fromRow(resultSet));
@@ -44,7 +57,7 @@ public class User {
     public static User findById(int id) throws Exception {
         try (Connection connection = DBConnection.getPostgesConnection();
                 PreparedStatement statement = connection.prepareStatement(
-                        "SELECT id_user, firstname, lastname, email FROM gotta_taste_user WHERE id_user = ?")) {
+                        "SELECT id_user, firstname, lastname, email, role FROM gotta_taste_user WHERE id_user = ?")) {
             statement.setInt(1, id);
             try (ResultSet resultSet = statement.executeQuery()) {
                 return resultSet.next() ? fromRow(resultSet) : null;
@@ -60,7 +73,7 @@ public class User {
     public static User authenticate(String email, String password) throws Exception {
         try (Connection connection = DBConnection.getPostgesConnection();
                 PreparedStatement statement = connection.prepareStatement(
-                        "SELECT id_user, firstname, lastname, email, user_password FROM gotta_taste_user WHERE email = ?")) {
+                        "SELECT id_user, firstname, lastname, email, role, user_password FROM gotta_taste_user WHERE email = ?")) {
             statement.setString(1, email);
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
@@ -74,15 +87,26 @@ public class User {
     }
 
     /** Crée le compte avec le mot de passe haché et renvoie son identifiant. */
+    /** Crée un compte avec le rôle {@link #ADMIN}. */
     public static int create(String firstname, String lastname, String email, String password) throws Exception {
+        return create(firstname, lastname, email, password, ADMIN);
+    }
+
+    public static int create(String firstname, String lastname, String email, String password, String role)
+            throws Exception {
+        if (!ADMIN.equals(role) && !BOULANGER.equals(role) && !VENDEUR.equals(role)) {
+            throw new IllegalArgumentException("Rôle inconnu : " + role
+                    + " (attendu " + ADMIN + ", " + BOULANGER + " ou " + VENDEUR + ")");
+        }
         try (Connection connection = DBConnection.getPostgesConnection();
                 PreparedStatement statement = connection.prepareStatement(
-                        "INSERT INTO gotta_taste_user(firstname, lastname, email, user_password) VALUES (?, ?, ?, ?)",
+                        "INSERT INTO gotta_taste_user(firstname, lastname, email, user_password, role) VALUES (?, ?, ?, ?, ?)",
                         Statement.RETURN_GENERATED_KEYS)) {
             statement.setString(1, firstname);
             statement.setString(2, lastname);
             statement.setString(3, email);
             statement.setString(4, PasswordHasher.hash(password));
+            statement.setString(5, role);
             statement.executeUpdate();
             try (ResultSet keys = statement.getGeneratedKeys()) {
                 keys.next();
@@ -98,7 +122,8 @@ public class User {
                 resultSet.getInt("id_user"),
                 resultSet.getString("firstname"),
                 resultSet.getString("lastname"),
-                resultSet.getString("email"));
+                resultSet.getString("email"),
+                resultSet.getString("role"));
     }
 
     public int getId() {
@@ -127,6 +152,11 @@ public class User {
 
     public String getFullName() {
         return this.firstname + " " + this.lastname;
+    }
+
+    /** Rôle du compte : {@link #ADMIN}, {@link #BOULANGER} ou {@link #VENDEUR}. */
+    public String getRole() {
+        return role;
     }
 
     public String getEmail() {

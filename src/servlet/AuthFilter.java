@@ -1,6 +1,7 @@
 package servlet;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Set;
 
 import jakarta.servlet.Filter;
@@ -11,17 +12,21 @@ import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import dao.User;
 import util.SessionUtils;
 
 /**
  * Contrôle d'accès central.
  *
- * Règle : tout est réservé aux utilisateurs connectés, sauf la consultation
- * (GET sans action de mutation) des pages listées dans {@link #PUBLIC_PATHS},
- * la page de connexion et les ressources statiques.
+ * Deux règles se superposent :
+ *   1. la consultation (GET sans action de mutation) des pages de
+ *      {@link #PUBLIC_PATHS} est ouverte à tous, comme les ressources
+ *      statiques et les photos ;
+ *   2. tout le reste exige une session, et le rôle du compte doit figurer
+ *      parmi ceux autorisés pour le chemin demandé ({@link #ROLES}).
  *
- * Les pages financières (ventes, commissions, historique des prix) ne sont
- * volontairement pas publiques.
+ * Un chemin absent de {@link #ROLES} n'est ouvert qu'aux administrateurs :
+ * une nouvelle page est fermée par défaut tant qu'elle n'y est pas déclarée.
  */
 public class AuthFilter implements Filter {
 
@@ -32,6 +37,32 @@ public class AuthFilter implements Filter {
             "/review",
             "/category", "/ingredient", "/step",
             "/form-login", "/form-login.jsp");
+
+    private static final Set<String> CATALOG = Set.of(User.ADMIN, User.BOULANGER);
+    private static final Set<String> SALES = Set.of(User.ADMIN, User.VENDEUR);
+    private static final Set<String> ANY = Set.of(User.ADMIN, User.BOULANGER, User.VENDEUR);
+
+    /** Rôles admis par chemin, au-delà de la consultation publique. */
+    private static final Map<String, Set<String>> ROLES = Map.ofEntries(
+            Map.entry("/recipe", CATALOG),
+            Map.entry("/form-recipe", CATALOG),
+            Map.entry("/recipe-details", CATALOG),
+            Map.entry("/recipe-ingredient", CATALOG),
+            Map.entry("/form-recipe-ingredient", CATALOG),
+            Map.entry("/step", CATALOG),
+            Map.entry("/form-step", CATALOG),
+            Map.entry("/category", CATALOG),
+            Map.entry("/form-category", CATALOG),
+            Map.entry("/ingredient", CATALOG),
+            Map.entry("/form-ingredient", CATALOG),
+            Map.entry("/recipe-stock", CATALOG),
+            Map.entry("/recipe-price-history", CATALOG),
+            Map.entry("/recipe-sell", SALES),
+            Map.entry("/form-recipe-sell", SALES),
+            Map.entry("/commission", SALES),
+            // Un avis peut être rédigé par n'importe quel employé connecté.
+            Map.entry("/review", ANY),
+            Map.entry("/form-review", ANY));
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
@@ -48,7 +79,7 @@ public class AuthFilter implements Filter {
             chain.doFilter(request, response);
             return;
         }
-        if ("/login".equals(path)) { // connexion (POST) et déconnexion (GET)
+        if ("/login".equals(path)) { // connexion (POST) et déconnexion (POST)
             chain.doFilter(request, response);
             return;
         }
@@ -56,15 +87,19 @@ public class AuthFilter implements Filter {
             chain.doFilter(request, response);
             return;
         }
-        if (SessionUtils.isUserConnected(req)) {
-            chain.doFilter(request, response);
+        if (!SessionUtils.isUserConnected(req)) {
+            if (readOnly) {
+                resp.sendRedirect(req.getContextPath() + "/form-login");
+            } else {
+                resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Connexion requise");
+            }
             return;
         }
-
-        if (readOnly) {
-            resp.sendRedirect(req.getContextPath() + "/form-login");
-        } else {
-            resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Connexion requise");
+        if (!SessionUtils.hasAnyRole(req, ROLES.getOrDefault(path, Set.of(User.ADMIN)).toArray(new String[0]))) {
+            resp.sendError(HttpServletResponse.SC_FORBIDDEN,
+                    "Votre rôle ne donne pas accès à cette page.");
+            return;
         }
+        chain.doFilter(request, response);
     }
 }

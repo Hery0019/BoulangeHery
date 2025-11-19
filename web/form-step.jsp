@@ -2,7 +2,7 @@
 <%@ page import="util.Html" %>
 <%@ page import="util.Csrf" %>
 <%@ page import="dao.Step, dao.Recipe, java.util.ArrayList, util.SessionUtils" %>
-<% boolean connected = SessionUtils.isUserConnected(request); %>
+<% boolean connected = SessionUtils.canManageCatalog(request); %>
 <% Step step = (Step) request.getAttribute("step"); %>
 
 <%@include file="header.jsp"%>

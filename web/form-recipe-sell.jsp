@@ -4,7 +4,7 @@
 <%@ page import="util.Csrf" %>
 <%@ page import="dao.Recipe, dao.Vendeur, dao.RecipeSell, dao.User, java.util.ArrayList, util.SessionUtils" %>
 <%
-    boolean connected = SessionUtils.isUserConnected(request);
+    boolean connected = SessionUtils.canSell(request);
     RecipeSell recipeSell = (RecipeSell) request.getAttribute("recipeSell");
     String errorMessage = (String) request.getAttribute("errorMessage");
     boolean creating = "create".equals(request.getAttribute("action"));

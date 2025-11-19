@@ -17,3 +17,4 @@
 | 007 | `ingredient.price` en NUMERIC(10,2) (l'INT arrondissait les prix unitaires) |
 | 008 | Vue `recipe_cost` : coût matière par recette |
 | 009 | Index sur les clés étrangères et les colonnes de filtre |
+| 010 | Rôles des comptes (ADMIN, BOULANGER, VENDEUR) |

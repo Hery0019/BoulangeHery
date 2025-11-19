@@ -2,7 +2,7 @@
 <%@ page import="util.Html" %>
 <%@ page import="util.Money" %>
 <%@ page import="dao.Recipe, dao.RecipePriceHistory, java.util.ArrayList, util.SessionUtils" %>
-<% boolean connected = SessionUtils.isUserConnected(request); %>
+<% boolean connected = SessionUtils.canManageCatalog(request); %>
 
 <%@include file="header.jsp"%>
 

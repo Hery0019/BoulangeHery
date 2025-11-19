@@ -3,7 +3,7 @@
 <%@ page import="util.Money" %>
 <%@ page import="util.Csrf" %>
 <%@ page import="dao.Perfume, dao.Recipe, dao.Category, java.util.ArrayList, util.SessionUtils" %>
-<% boolean connected = SessionUtils.isUserConnected(request); %>
+<% boolean connected = SessionUtils.canManageCatalog(request); %>
 <% Recipe recipe = (Recipe) request.getAttribute("recipe"); %>
 
 <%@include file="header.jsp"%>
