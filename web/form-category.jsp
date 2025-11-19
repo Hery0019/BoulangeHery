@@ -54,7 +54,12 @@
                                 <div class="card-body">
                                     <form method="POST" action="category">
                                         <input type="hidden" name="_csrf" value="<%= Html.esc(Csrf.token(request)) %>">
-                                        <% if (request.getAttribute("errorMessage") != null) { %>} . "\n" . $1 . q{<div class="alert alert-danger alert-dismissible" role="alert">} . "\n" . $1 . q{    <%= Html.esc(request.getAttribute("errorMessage")) %>} . "\n" . $1 . q{    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>} . "\n" . $1 . q{</div>} . "\n" . $1 . q{<% } %>
+                                        <% if (request.getAttribute("errorMessage") != null) { %>
+                                        <div class="alert alert-danger alert-dismissible" role="alert">
+                                            <%= Html.esc(request.getAttribute("errorMessage")) %>
+                                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                        </div>
+                                        <% } %>
                                         <input type="hidden" name="action" value="<%= Html.esc(request.getAttribute("action")) %>">
                                         <input type="hidden" name="idCategory" value="<%= Html.esc(category.getId()) %>">
                                         <div class="mb-3">
