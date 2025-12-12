@@ -127,7 +127,9 @@
                                     <th>Nom</th>
                                     <th>Unité de mesure</th>
                                     <th>Prix unitaire</th>
+                                    <th>Stock</th>
                                     <% if (connected) { %>
+                                    <th>Approvisionner</th>
                                     <th>Actions</th>
                                     <% } %>
                                 </tr>
@@ -142,7 +144,22 @@
                                     <td><%= Html.esc(ingredient.getUnit()) %>
                                     </td>
                                     <td><%= Html.esc(Money.format(ingredient.getPrice())) %></td>
+                                    <td>
+                                        <span class="badge bg-label-<%= ingredient.getStock().signum() == 0 ? "danger" : "secondary" %>">
+                                            <%= Html.esc(ingredient.getStock()) %> <%= Html.esc(ingredient.getUnit()) %>
+                                        </span>
+                                    </td>
                                     <% if (connected) { %>
+                                    <td>
+                                        <form method="POST" action="ingredient-stock" class="d-flex gap-1">
+                                            <input type="hidden" name="_csrf" value="<%= Html.esc(Csrf.token(request)) %>">
+                                            <input type="hidden" name="idIngredient" value="<%= Html.esc(ingredient.getId()) %>">
+                                            <input name="quantity" type="number" min="0.01" step="0.01"
+                                                   class="form-control form-control-sm" style="width: 8rem;"
+                                                   placeholder="Quantité" required>
+                                            <button type="submit" class="btn btn-sm btn-success">+</button>
+                                        </form>
+                                    </td>
                                     <td>
                                         <div class="dropdown">
                                             <button type="button" class="btn p-0 dropdown-toggle hide-arrow"

@@ -20,10 +20,16 @@ DECLARE
     v_cook       TIME;
     v_history    RECORD;
     v_msg        TEXT;
+    -- Stocks de départ : le scénario raisonne en écarts, pour rester valable
+    -- quelles que soient les quantités posées par les données de démonstration.
+    v_stock1     INT;
+    v_stock8     INT;
 BEGIN
-    -- Données de démo attendues : recette 1 = Baguette 1500, recette 8 = Tarte 4000, stock 100 partout,
-    -- règle de commission 5 % au-delà de 200 000 datée d'aujourd'hui.
-    ASSERT (SELECT reste FROM recipe_stock WHERE id_recipe = 1) = 100, 'stock initial recette 1';
+    -- Données de démo attendues : recette 1 = Baguette 1500, recette 8 = Tarte 4000,
+    -- règle de commission 5 % au-delà de 200 000.
+    SELECT reste INTO v_stock1 FROM recipe_stock WHERE id_recipe = 1;
+    SELECT reste INTO v_stock8 FROM recipe_stock WHERE id_recipe = 8;
+    ASSERT v_stock1 >= 10 AND v_stock8 >= 1, 'les données de démo doivent fournir du stock';
     ASSERT (SELECT count(*) FROM recipe_stock) = (SELECT count(*) FROM recipe), 'une ligne de stock par recette';
     RAISE NOTICE 'OK  stock initial : une ligne par recette';
 
@@ -31,24 +37,24 @@ BEGIN
     INSERT INTO recipe_sell (id_vendeur, id_recipe, id_category, id_user, combien, argent, reste, sell_date)
     VALUES (1, 1, 1, 1, 10, 20000, 0, CURRENT_DATE) RETURNING id_recipe_sell, reste INTO v_sale, v_reste;
     ASSERT v_reste = 5000, 'reste = argent - combien * prix (attendu 5000, obtenu ' || v_reste || ')';
-    ASSERT (SELECT reste FROM recipe_stock WHERE id_recipe = 1) = 90, 'stock décrémenté de 10';
+    ASSERT (SELECT reste FROM recipe_stock WHERE id_recipe = 1) = v_stock1 - 10, 'stock décrémenté de 10';
     ASSERT (SELECT count(*) FROM commission WHERE id_recipe_sell = v_sale) = 0, 'pas de commission sous 200 000';
     RAISE NOTICE 'OK  vente : reste, stock, seuil de commission';
 
     -- 2. Stock insuffisant : refus avec message explicite, stock inchangé
     BEGIN
         INSERT INTO recipe_sell (id_vendeur, id_recipe, id_category, id_user, combien, argent, reste, sell_date)
-        VALUES (3, 8, 3, 1, 200, 900000, 0, CURRENT_DATE);
-        RAISE EXCEPTION 'la vente de 200 unités aurait dû être refusée (stock 100)';
+        VALUES (3, 8, 3, 1, v_stock8 + 100, 900000, 0, CURRENT_DATE);
+        RAISE EXCEPTION 'la vente au-delà du stock aurait dû être refusée';
     EXCEPTION WHEN raise_exception THEN
         GET STACKED DIAGNOSTICS v_msg = MESSAGE_TEXT;
         ASSERT v_msg LIKE 'Stock insuffisant%', 'message stock insuffisant, obtenu : ' || v_msg;
     END;
-    ASSERT (SELECT reste FROM recipe_stock WHERE id_recipe = 8) = 100, 'stock recette 8 inchangé après refus';
+    ASSERT (SELECT reste FROM recipe_stock WHERE id_recipe = 8) = v_stock8, 'stock recette 8 inchangé après refus';
     RAISE NOTICE 'OK  stock insuffisant refusé sans effet';
 
     -- 3. Approvisionnement puis vente au-dessus du seuil : commission 5 % liée à la vente
-    INSERT INTO recipe_stock (id_recipe, reste) VALUES (8, 150)
+    INSERT INTO recipe_stock (id_recipe, reste) VALUES (8, 250 - v_stock8)
     ON CONFLICT (id_recipe) DO UPDATE SET reste = recipe_stock.reste + EXCLUDED.reste;
     INSERT INTO recipe_sell (id_vendeur, id_recipe, id_category, id_user, combien, argent, reste, sell_date)
     VALUES (3, 8, 3, 1, 200, 900000, 0, CURRENT_DATE) RETURNING id_recipe_sell INTO v_sale;
@@ -79,7 +85,7 @@ BEGIN
         GET STACKED DIAGNOSTICS v_msg = CONSTRAINT_NAME;
         ASSERT v_msg = 'recipe_sell_reste_check', 'contrainte attendue recipe_sell_reste_check, obtenu ' || v_msg;
     END;
-    ASSERT (SELECT reste FROM recipe_stock WHERE id_recipe = 1) = 90, 'stock inchangé après refus (argent)';
+    ASSERT (SELECT reste FROM recipe_stock WHERE id_recipe = 1) = v_stock1 - 10, 'stock inchangé après refus (argent)';
     RAISE NOTICE 'OK  argent insuffisant refusé';
 
     -- 7. Vente antérieure à toute règle de commission : acceptée, sans commission
@@ -157,6 +163,36 @@ BEGIN
     EXCEPTION WHEN check_violation THEN NULL;
     END;
     RAISE NOTICE 'OK  rôles des comptes';
+
+    -- 15. Production : consomme la matière première, alimente le produit fini
+    ASSERT (SELECT count(*) FROM ingredient_stock) = (SELECT count(*) FROM ingredient),
+        'une ligne de stock par ingrédient';
+    DECLARE
+        v_flour_before NUMERIC;
+        v_stock_before INT;
+    BEGIN
+        SELECT reste INTO v_flour_before FROM ingredient_stock WHERE id_ingredient = 1;
+        SELECT reste INTO v_stock_before FROM recipe_stock WHERE id_recipe = 1;
+
+        -- 10 baguettes = 10 x 500 g de farine et 10 x 10 g de levure
+        INSERT INTO production (id_recipe, quantity) VALUES (1, 10);
+        ASSERT (SELECT reste FROM ingredient_stock WHERE id_ingredient = 1) = v_flour_before - 5000,
+            'farine consommée par la production';
+        ASSERT (SELECT reste FROM recipe_stock WHERE id_recipe = 1) = v_stock_before + 10,
+            'produit fini ajouté au stock';
+
+        -- Matière première insuffisante : refus, et rien n'est consommé
+        BEGIN
+            INSERT INTO production (id_recipe, quantity) VALUES (1, 1000000);
+            RAISE EXCEPTION 'la production impossible aurait dû être refusée';
+        EXCEPTION WHEN raise_exception THEN
+            GET STACKED DIAGNOSTICS v_msg = MESSAGE_TEXT;
+            ASSERT v_msg LIKE 'Matière première insuffisante%', 'message de matière manquante, obtenu : ' || v_msg;
+        END;
+        ASSERT (SELECT reste FROM ingredient_stock WHERE id_ingredient = 1) = v_flour_before - 5000,
+            'stock de farine inchangé après refus';
+    END;
+    RAISE NOTICE 'OK  production';
 END $$;
 
 ROLLBACK;

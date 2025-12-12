@@ -164,6 +164,21 @@
     <servlet-name>PictureServlet</servlet-name>
   </servlet>
 
+  <servlet>
+    <servlet-class>servlet.ProductionServlet</servlet-class>
+    <servlet-name>ProductionServlet</servlet-name>
+  </servlet>
+
+  <servlet>
+    <servlet-class>servlet.FormProductionServlet</servlet-class>
+    <servlet-name>FormProductionServlet</servlet-name>
+  </servlet>
+
+  <servlet>
+    <servlet-class>servlet.IngredientStockServlet</servlet-class>
+    <servlet-name>IngredientStockServlet</servlet-name>
+  </servlet>
+
 
 
   <!-- Servlet mapping -->
@@ -271,6 +286,21 @@
   <servlet-mapping>
     <servlet-name>PictureServlet</servlet-name>
     <url-pattern>/pictures/*</url-pattern>
+  </servlet-mapping>
+
+  <servlet-mapping>
+    <servlet-name>ProductionServlet</servlet-name>
+    <url-pattern>/production</url-pattern>
+  </servlet-mapping>
+
+  <servlet-mapping>
+    <servlet-name>FormProductionServlet</servlet-name>
+    <url-pattern>/form-production</url-pattern>
+  </servlet-mapping>
+
+  <servlet-mapping>
+    <servlet-name>IngredientStockServlet</servlet-name>
+    <url-pattern>/ingredient-stock</url-pattern>
   </servlet-mapping>
 
   <!-- Sessions : expiration après 30 min d'inactivité, cookie inaccessible au JavaScript.

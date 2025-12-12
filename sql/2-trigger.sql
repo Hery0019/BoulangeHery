@@ -8,6 +8,8 @@
 --   * recipe_sell.reste       = argent - combien * prix de la recette
 --   * commission              : calculée à chaque vente selon la règle en vigueur à la date de vente
 --   * recipe_price_history    : une ligne par changement de prix
+--   * ingredient_stock        : une ligne par ingrédient, créée avec lui
+--   * production              : consomme les ingrédients de la recette et alimente recipe_stock
 -- Les refus (stock insuffisant...) sont des RAISE EXCEPTION dont le message est
 -- affiché tel quel à l'utilisateur (dao.BusinessRuleException).
 
@@ -201,3 +203,81 @@ AFTER UPDATE OF price ON recipe
 FOR EACH ROW
 WHEN (OLD.price IS DISTINCT FROM NEW.price)
 EXECUTE FUNCTION log_price_change();
+
+
+-- ---------------------------------------------------------------------------
+-- Stock de matières premières : une ligne par ingrédient, créée à 0 avec lui
+-- ---------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION init_ingredient_stock()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO ingredient_stock (id_ingredient, reste)
+    VALUES (NEW.id_ingredient, 0)
+    ON CONFLICT (id_ingredient) DO NOTHING;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_init_ingredient_stock
+AFTER INSERT ON ingredient
+FOR EACH ROW
+EXECUTE FUNCTION init_ingredient_stock();
+
+
+-- ---------------------------------------------------------------------------
+-- Production : consomme les ingrédients de la recette, alimente le produit fini
+-- ---------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION apply_production()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_missing RECORD;
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM recipe_ingredient WHERE id_recipe = NEW.id_recipe) THEN
+        RAISE EXCEPTION 'Cette recette n''a aucun ingrédient : composez-la avant de lancer une production';
+    END IF;
+
+    -- Verrou sur les lignes de stock concernées : la vérification qui suit et le
+    -- décrément forment un tout, deux productions simultanées ne peuvent pas
+    -- consommer deux fois la même farine.
+    PERFORM 1
+    FROM ingredient_stock s
+    JOIN recipe_ingredient ri ON ri.id_ingredient = s.id_ingredient
+    WHERE ri.id_recipe = NEW.id_recipe
+    FOR UPDATE OF s;
+
+    SELECT i.ingredient_name,
+           i.unit,
+           ri.quantity * NEW.quantity AS besoin,
+           COALESCE(s.reste, 0) AS dispo
+    INTO v_missing
+    FROM recipe_ingredient ri
+    JOIN ingredient i ON i.id_ingredient = ri.id_ingredient
+    LEFT JOIN ingredient_stock s ON s.id_ingredient = ri.id_ingredient
+    WHERE ri.id_recipe = NEW.id_recipe
+      AND COALESCE(s.reste, 0) < ri.quantity * NEW.quantity
+    ORDER BY i.ingredient_name
+    LIMIT 1;
+
+    IF FOUND THEN
+        RAISE EXCEPTION 'Matière première insuffisante : % (% % nécessaires, % disponibles)',
+            v_missing.ingredient_name, v_missing.besoin, v_missing.unit, v_missing.dispo;
+    END IF;
+
+    UPDATE ingredient_stock s
+    SET reste = s.reste - ri.quantity * NEW.quantity
+    FROM recipe_ingredient ri
+    WHERE ri.id_recipe = NEW.id_recipe
+      AND s.id_ingredient = ri.id_ingredient;
+
+    UPDATE recipe_stock
+    SET reste = reste + NEW.quantity
+    WHERE id_recipe = NEW.id_recipe;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_apply_production
+BEFORE INSERT ON production
+FOR EACH ROW
+EXECUTE FUNCTION apply_production();

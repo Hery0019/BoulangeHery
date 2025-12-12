@@ -13,6 +13,13 @@ public class Ingredient {
     private String name = "";
     private String unit = "";
     private BigDecimal price = BigDecimal.ZERO; // prix unitaire, NUMERIC(10,2) en base
+    /** Matière première disponible, lue dans ingredient_stock. */
+    private BigDecimal stock = BigDecimal.ZERO;
+
+    /** Ingrédient et son stock : la ligne de stock est créée avec l'ingrédient. */
+    private static final String SELECT_WITH_STOCK =
+            "SELECT i.*, COALESCE(s.reste, 0) AS stock FROM ingredient i"
+                    + " LEFT JOIN ingredient_stock s ON s.id_ingredient = i.id_ingredient";
 
     public Ingredient() {
     }
@@ -37,7 +44,7 @@ public class Ingredient {
         ArrayList<Ingredient> ingredients = new ArrayList<>();
         try (Connection connection = DBConnection.getPostgesConnection();
                 PreparedStatement statement = connection.prepareStatement(
-                        "SELECT * FROM ingredient ORDER BY id_ingredient");
+                        SELECT_WITH_STOCK + " ORDER BY i.id_ingredient");
                 ResultSet resultSet = statement.executeQuery()) {
             while (resultSet.next()) {
                 ingredients.add(fromRow(resultSet));
@@ -51,14 +58,15 @@ public class Ingredient {
             BigDecimal maxPrice) throws Exception {
         ArrayList<Ingredient> ingredients = new ArrayList<>();
 
-        StringBuilder sql = new StringBuilder("SELECT * FROM ingredient WHERE ingredient_name ILIKE ? AND unit ILIKE ?");
+        StringBuilder sql = new StringBuilder(SELECT_WITH_STOCK
+                + " WHERE ingredient_name ILIKE ? AND unit ILIKE ?");
         if (minPrice != null) {
             sql.append(" AND price >= ?");
         }
         if (maxPrice != null) {
             sql.append(" AND price <= ?");
         }
-        sql.append(" ORDER BY id_ingredient");
+        sql.append(" ORDER BY i.id_ingredient");
 
         try (Connection connection = DBConnection.getPostgesConnection();
                 PreparedStatement statement = connection.prepareStatement(sql.toString())) {
@@ -83,13 +91,14 @@ public class Ingredient {
     public void find() throws Exception {
         try (Connection connection = DBConnection.getPostgesConnection();
                 PreparedStatement statement = connection.prepareStatement(
-                        "SELECT * FROM ingredient WHERE id_ingredient = ?")) {
+                        SELECT_WITH_STOCK + " WHERE i.id_ingredient = ?")) {
             statement.setInt(1, id);
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
                     name = resultSet.getString("ingredient_name");
                     unit = resultSet.getString("unit");
                     price = resultSet.getBigDecimal("price");
+                    stock = resultSet.getBigDecimal("stock");
                 }
             }
         }
@@ -138,11 +147,18 @@ public class Ingredient {
     }
 
     private static Ingredient fromRow(ResultSet resultSet) throws SQLException {
-        return new Ingredient(
+        Ingredient ingredient = new Ingredient(
                 resultSet.getInt("id_ingredient"),
                 resultSet.getString("ingredient_name"),
                 resultSet.getString("unit"),
                 resultSet.getBigDecimal("price"));
+        ingredient.stock = resultSet.getBigDecimal("stock");
+        return ingredient;
+    }
+
+    /** Matière première disponible pour cet ingrédient. */
+    public BigDecimal getStock() {
+        return stock == null ? BigDecimal.ZERO : stock;
     }
 
     public int getId() {

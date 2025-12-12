@@ -124,3 +124,12 @@ INSERT INTO vendeur (firstname, lastname, sexe, email, salary) VALUES
 
 -- Le stock est cree a 0 par trigger a la creation de chaque recette : approvisionnement de demo
 UPDATE recipe_stock SET reste = 100;
+
+-- Matieres premieres : le stock est cree a 0 par trigger avec chaque ingredient
+UPDATE ingredient_stock SET reste = 200000; -- grammes / litres selon l'unite
+
+-- Ordres de production de demo : consomment les ingredients et alimentent le stock fini
+INSERT INTO production (id_recipe, id_user, quantity, production_date) VALUES
+    (1, 2, 120, CURRENT_DATE - 2),
+    (2, 2, 80,  CURRENT_DATE - 1),
+    (8, 2, 40,  CURRENT_DATE);

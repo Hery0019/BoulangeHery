@@ -129,6 +129,21 @@ CREATE TABLE recipe_stock (
     FOREIGN KEY (id_recipe) REFERENCES recipe(id_recipe) ON DELETE CASCADE
 );
 
+CREATE TABLE ingredient_stock (
+    id_ingredient INT PRIMARY KEY REFERENCES ingredient(id_ingredient) ON DELETE CASCADE,
+    reste NUMERIC(12,2) NOT NULL DEFAULT 0 CHECK (reste >= 0) -- matière première disponible
+);
+
+CREATE TABLE production (
+    id_production SERIAL PRIMARY KEY,
+    id_recipe INT NOT NULL,
+    id_user INT, -- auteur de l'ordre ; NULL si le compte est supprimé
+    quantity INT NOT NULL CHECK (quantity > 0),
+    production_date DATE NOT NULL DEFAULT CURRENT_DATE,
+    FOREIGN KEY (id_recipe) REFERENCES recipe(id_recipe) ON DELETE RESTRICT,
+    FOREIGN KEY (id_user) REFERENCES gotta_taste_user(id_user) ON DELETE SET NULL
+);
+
 CREATE TABLE recipe_price_history (
     id_recipe_price_history SERIAL PRIMARY KEY,
     id_recipe INT NOT NULL,
@@ -180,3 +195,7 @@ CREATE INDEX IF NOT EXISTS idx_commission_change_date ON commission_change (comm
 -- Historique des prix
 CREATE INDEX IF NOT EXISTS idx_price_history_recipe ON recipe_price_history (id_recipe);
 CREATE INDEX IF NOT EXISTS idx_price_history_date ON recipe_price_history (change_date);
+
+-- Production
+CREATE INDEX IF NOT EXISTS idx_production_recipe ON production (id_recipe);
+CREATE INDEX IF NOT EXISTS idx_production_date ON production (production_date);

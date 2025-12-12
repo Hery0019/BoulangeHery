@@ -56,6 +56,16 @@
         <% } %>
 
         <!-- Recipe Sells -->
+        <% if (menuCatalog) { %>
+        <!-- Production -->
+        <li class="menu-item <% if (activeMenuItem.equals("production")) { %>active<% } %>">
+            <a href="production" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-cog"></i>
+                <div>Production</div>
+            </a>
+        </li>
+        <% } %>
+
         <% if (menuSales) { %>
         <li class="menu-item <% if (activeMenuItem.equals("recipe-sell")) { %>active<% } %>">
             <a href="recipe-sell" class="menu-link">
