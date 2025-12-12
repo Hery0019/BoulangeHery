@@ -66,6 +66,16 @@
         </li>
         <% } %>
 
+        <% if (menuCatalog) { %>
+        <!-- Pertes -->
+        <li class="menu-item <% if (activeMenuItem.equals("recipe-loss")) { %>active<% } %>">
+            <a href="recipe-loss" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-trash"></i>
+                <div>Pertes</div>
+            </a>
+        </li>
+        <% } %>
+
         <% if (menuSales) { %>
         <li class="menu-item <% if (activeMenuItem.equals("recipe-sell")) { %>active<% } %>">
             <a href="recipe-sell" class="menu-link">

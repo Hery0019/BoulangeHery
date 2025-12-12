@@ -193,6 +193,33 @@ BEGIN
             'stock de farine inchangé après refus';
     END;
     RAISE NOTICE 'OK  production';
+
+    -- 16. Pertes : sortie de stock constatée, jamais au-delà du disponible
+    DECLARE
+        v_before INT;
+    BEGIN
+        SELECT reste INTO v_before FROM recipe_stock WHERE id_recipe = 1;
+        INSERT INTO recipe_loss (id_recipe, quantity, reason) VALUES (1, 5, 'INVENDU');
+        ASSERT (SELECT reste FROM recipe_stock WHERE id_recipe = 1) = v_before - 5,
+            'stock décrémenté par la perte';
+
+        BEGIN
+            INSERT INTO recipe_loss (id_recipe, quantity, reason) VALUES (1, v_before + 1000, 'CASSE');
+            RAISE EXCEPTION 'une perte supérieure au stock aurait dû être refusée';
+        EXCEPTION WHEN raise_exception THEN
+            GET STACKED DIAGNOSTICS v_msg = MESSAGE_TEXT;
+            ASSERT v_msg LIKE 'Stock insuffisant%', 'message stock insuffisant, obtenu : ' || v_msg;
+        END;
+        ASSERT (SELECT reste FROM recipe_stock WHERE id_recipe = 1) = v_before - 5,
+            'stock inchangé après refus de perte';
+
+        BEGIN
+            INSERT INTO recipe_loss (id_recipe, quantity, reason) VALUES (1, 1, 'AUTRE');
+            RAISE EXCEPTION 'un motif inconnu aurait dû être refusé';
+        EXCEPTION WHEN check_violation THEN NULL;
+        END;
+    END;
+    RAISE NOTICE 'OK  pertes de stock';
 END $$;
 
 ROLLBACK;

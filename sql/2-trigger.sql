@@ -10,6 +10,7 @@
 --   * recipe_price_history    : une ligne par changement de prix
 --   * ingredient_stock        : une ligne par ingrédient, créée avec lui
 --   * production              : consomme les ingrédients de la recette et alimente recipe_stock
+--   * recipe_loss             : sortie de stock constatée (invendu, casse, péremption, don)
 -- Les refus (stock insuffisant...) sont des RAISE EXCEPTION dont le message est
 -- affiché tel quel à l'utilisateur (dao.BusinessRuleException).
 
@@ -281,3 +282,33 @@ CREATE OR REPLACE TRIGGER trg_apply_production
 BEFORE INSERT ON production
 FOR EACH ROW
 EXECUTE FUNCTION apply_production();
+
+
+-- ---------------------------------------------------------------------------
+-- Pertes : sortie de stock constatée (invendu, casse, péremption, don)
+-- ---------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION apply_recipe_loss()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_remaining INT;
+BEGIN
+    -- Même décrément atomique que pour une vente : la condition est réévaluée
+    -- sous verrou de ligne, on ne peut pas jeter plus que ce qui reste.
+    UPDATE recipe_stock
+    SET reste = reste - NEW.quantity
+    WHERE id_recipe = NEW.id_recipe AND reste >= NEW.quantity
+    RETURNING reste INTO v_remaining;
+
+    IF NOT FOUND THEN
+        SELECT reste INTO v_remaining FROM recipe_stock WHERE id_recipe = NEW.id_recipe;
+        RAISE EXCEPTION 'Stock insuffisant : il reste % unité(s) de cette recette', COALESCE(v_remaining, 0);
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_apply_recipe_loss
+BEFORE INSERT ON recipe_loss
+FOR EACH ROW
+EXECUTE FUNCTION apply_recipe_loss();

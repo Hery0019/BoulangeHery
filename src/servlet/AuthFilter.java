@@ -59,6 +59,8 @@ public class AuthFilter implements Filter {
             Map.entry("/ingredient-stock", CATALOG),
             Map.entry("/production", CATALOG),
             Map.entry("/form-production", CATALOG),
+            Map.entry("/recipe-loss", CATALOG),
+            Map.entry("/form-recipe-loss", CATALOG),
             Map.entry("/recipe-price-history", CATALOG),
             Map.entry("/recipe-sell", SALES),
             Map.entry("/form-recipe-sell", SALES),

@@ -26,6 +26,9 @@ public class Recipe {
     private String picture = "";
     /** Coût matière, lu dans la vue recipe_cost (jamais saisi). */
     private double cost = 0.0;
+    /** Stock de produit fini et seuil d'alerte, lus dans recipe_stock. */
+    private int stock = 0;
+    private int seuilAlerte = 0;
 
     private static final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
     private static final DateTimeFormatter humanTimeFormatter = new DateTimeFormatterBuilder()
@@ -42,7 +45,10 @@ public class Recipe {
 
     /** Recette et son coût matière : la vue fournit une ligne par recette. */
     private static final String SELECT_WITH_COST =
-            "SELECT r.*, c.cost FROM recipe r JOIN recipe_cost c ON c.id_recipe = r.id_recipe";
+            "SELECT r.*, c.cost, COALESCE(s.reste, 0) AS stock, COALESCE(s.seuil_alerte, 0) AS seuil_alerte"
+                    + " FROM recipe r"
+                    + " JOIN recipe_cost c ON c.id_recipe = r.id_recipe"
+                    + " LEFT JOIN recipe_stock s ON s.id_recipe = r.id_recipe";
 
     public Recipe() {
     }
@@ -128,6 +134,7 @@ public class Recipe {
                 Recipe recipe = new Recipe(id, title, description, idCategory, idPerfume, cookTime, createdBy,
                         createdDate, price, picture);
                 recipe.setCost(resultSet.getDouble("cost"));
+                recipe.setStock(resultSet.getInt("stock"), resultSet.getInt("seuil_alerte"));
                 recipes.add(recipe);
             }
         } catch (Exception e) {
@@ -171,6 +178,8 @@ public class Recipe {
                 price = resultSet.getDouble("price");
                 picture = resultSet.getString("picture");
                 cost = resultSet.getDouble("cost");
+                stock = resultSet.getInt("stock");
+                seuilAlerte = resultSet.getInt("seuil_alerte");
             }
         } catch (Exception e) {
             throw e;
@@ -212,6 +221,7 @@ public class Recipe {
                 recipe.setPrice(resultSet.getDouble("price"));
                 recipe.setPicture(resultSet.getString("picture"));
                 recipe.setCost(resultSet.getDouble("cost"));
+                recipe.setStock(resultSet.getInt("stock"), resultSet.getInt("seuil_alerte"));
                 return recipe;
             }
         } catch (Exception e) {
@@ -420,6 +430,7 @@ public class Recipe {
                 Recipe recipe = new Recipe(id, title, description, idCategory, idPerfume, cookTime, createdBy,
                         createdDate, price, picture);
                 recipe.setCost(resultSet.getDouble("cost"));
+                recipe.setStock(resultSet.getInt("stock"), resultSet.getInt("seuil_alerte"));
                 recipes.add(recipe);
             }
         } catch (Exception e) {
@@ -492,6 +503,24 @@ public class Recipe {
 
     public void setCost(double cost) {
         this.cost = cost;
+    }
+
+    public int getStock() {
+        return stock;
+    }
+
+    public int getSeuilAlerte() {
+        return seuilAlerte;
+    }
+
+    public void setStock(int stock, int seuilAlerte) {
+        this.stock = stock;
+        this.seuilAlerte = seuilAlerte;
+    }
+
+    /** Vrai quand un seuil est défini et que le stock est retombé dessous. */
+    public boolean isStockLow() {
+        return seuilAlerte > 0 && stock <= seuilAlerte;
     }
 
     /** Marge brute : prix de vente moins coût matière. Négative si la recette est vendue à perte. */

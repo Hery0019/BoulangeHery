@@ -108,7 +108,15 @@
                         <h5 class="card-header">Stock</h5>
                         <div class="card-body">
                             <% RecipeStock stock = (RecipeStock) request.getAttribute("stock"); %>
-                            <p class="mb-2">Quantité disponible : <span class="fw-bold"><%= stock == null ? "non défini" : Html.esc(stock.getReste()) %></span></p>
+                            <p class="mb-2">Quantité disponible :
+                                <span class="fw-bold"><%= stock == null ? "non défini" : Html.esc(stock.getReste()) %></span>
+                                <% if (stock != null && stock.getSeuilAlerte() > 0) { %>
+                                <span class="text-muted">(seuil d'alerte : <%= Html.esc(stock.getSeuilAlerte()) %>)</span>
+                                <% } %>
+                                <% if (stock != null && stock.isLow()) { %>
+                                <span class="badge bg-label-danger ms-2">Stock bas : à réapprovisionner</span>
+                                <% } %>
+                            </p>
                             <% if (connected) { %>
                             <form method="POST" action="recipe-stock" class="row g-2 align-items-end">
                                 <input type="hidden" name="_csrf" value="<%= Html.esc(Csrf.token(request)) %>">
@@ -118,6 +126,19 @@
                                     <input name="quantity" id="stockQuantity" type="number" min="1" class="form-control" placeholder="Quantité" required>
                                 </div>
                                 <div class="col-auto"><button type="submit" class="btn btn-success">Ajouter au stock</button></div>
+                                <div class="col-auto"><a href="form-recipe-loss?idRecipe=<%= Html.esc(recipe.getId()) %>"
+                                                         class="btn btn-outline-warning">Constater une perte</a></div>
+                            </form>
+                            <form method="POST" action="recipe-stock" class="row g-2 align-items-end mt-1">
+                                <input type="hidden" name="_csrf" value="<%= Html.esc(Csrf.token(request)) %>">
+                                <input type="hidden" name="action" value="threshold">
+                                <input type="hidden" name="idRecipe" value="<%= Html.esc(recipe.getId()) %>">
+                                <div class="col-auto">
+                                    <label class="form-label" for="seuilAlerte">Seuil d'alerte</label>
+                                    <input name="seuilAlerte" id="seuilAlerte" type="number" min="0" class="form-control"
+                                           value="<%= stock == null ? 0 : Html.esc(stock.getSeuilAlerte()) %>">
+                                </div>
+                                <div class="col-auto"><button type="submit" class="btn btn-outline-secondary">Enregistrer le seuil</button></div>
                             </form>
                             <% } %>
                         </div>

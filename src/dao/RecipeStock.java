@@ -15,25 +15,29 @@ public class RecipeStock {
     private final int id;
     private final int idRecipe;
     private final int reste;
+    /** Seuil d'alerte ; 0 signifie « pas d'alerte ». */
+    private final int seuilAlerte;
 
-    public RecipeStock(int id, int idRecipe, int reste) {
+    public RecipeStock(int id, int idRecipe, int reste, int seuilAlerte) {
         this.id = id;
         this.idRecipe = idRecipe;
         this.reste = reste;
+        this.seuilAlerte = seuilAlerte;
     }
 
     /** Stock de la recette, ou {@code null} si aucune ligne n'existe (base antérieure à la migration 005). */
     public static RecipeStock findByRecipe(int idRecipe) throws SQLException {
         try (Connection connection = DBConnection.getPostgesConnection();
                 PreparedStatement statement = connection.prepareStatement(
-                        "SELECT id_recipe_stock, id_recipe, reste FROM recipe_stock WHERE id_recipe = ?")) {
+                        "SELECT id_recipe_stock, id_recipe, reste, seuil_alerte FROM recipe_stock WHERE id_recipe = ?")) {
             statement.setInt(1, idRecipe);
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
                     return new RecipeStock(
                             resultSet.getInt("id_recipe_stock"),
                             resultSet.getInt("id_recipe"),
-                            resultSet.getInt("reste"));
+                            resultSet.getInt("reste"),
+                            resultSet.getInt("seuil_alerte"));
                 }
                 return null;
             }
@@ -65,6 +69,30 @@ public class RecipeStock {
 
     public int getReste() {
         return reste;
+    }
+
+    public int getSeuilAlerte() {
+        return seuilAlerte;
+    }
+
+    /** Vrai quand un seuil est défini et que le stock est retombé dessous. */
+    public boolean isLow() {
+        return seuilAlerte > 0 && reste <= seuilAlerte;
+    }
+
+    /** Définit le seuil d'alerte d'une recette (0 pour le désactiver). */
+    public static void setThreshold(int idRecipe, int seuil) throws SQLException {
+        if (seuil < 0) {
+            throw new IllegalArgumentException("Le seuil d'alerte ne peut pas être négatif");
+        }
+        try (Connection connection = DBConnection.getPostgesConnection();
+                PreparedStatement statement = connection.prepareStatement(
+                        "INSERT INTO recipe_stock (id_recipe, reste, seuil_alerte) VALUES (?, 0, ?)"
+                                + " ON CONFLICT (id_recipe) DO UPDATE SET seuil_alerte = EXCLUDED.seuil_alerte")) {
+            statement.setInt(1, idRecipe);
+            statement.setInt(2, seuil);
+            statement.executeUpdate();
+        }
     }
 
 }

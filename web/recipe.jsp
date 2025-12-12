@@ -241,6 +241,11 @@
                                             <% if (recipe.hasNoCost()) { %>
                                             <p><strong>Marge :</strong> <span class="text-muted">aucun ingrédient renseigné</span></p>
                                             <% } else { %>
+                                            <p><strong>Stock :</strong> <%= Html.esc(recipe.getStock()) %>
+                                                <% if (recipe.isStockLow()) { %>
+                                                <span class="badge bg-label-danger">stock bas</span>
+                                                <% } %>
+                                            </p>
                                             <p><strong>Coût matière :</strong> <%= Html.esc(Money.format(recipe.getCost())) %></p>
                                             <p><strong>Marge :</strong>
                                                 <span class="badge bg-label-<%= recipe.getMargin() < 0 ? "danger" : (recipe.getMarginRate() < 20 ? "warning" : "success") %>">

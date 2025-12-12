@@ -179,6 +179,16 @@
     <servlet-name>IngredientStockServlet</servlet-name>
   </servlet>
 
+  <servlet>
+    <servlet-class>servlet.RecipeLossServlet</servlet-class>
+    <servlet-name>RecipeLossServlet</servlet-name>
+  </servlet>
+
+  <servlet>
+    <servlet-class>servlet.FormRecipeLossServlet</servlet-class>
+    <servlet-name>FormRecipeLossServlet</servlet-name>
+  </servlet>
+
 
 
   <!-- Servlet mapping -->
@@ -301,6 +311,16 @@
   <servlet-mapping>
     <servlet-name>IngredientStockServlet</servlet-name>
     <url-pattern>/ingredient-stock</url-pattern>
+  </servlet-mapping>
+
+  <servlet-mapping>
+    <servlet-name>RecipeLossServlet</servlet-name>
+    <url-pattern>/recipe-loss</url-pattern>
+  </servlet-mapping>
+
+  <servlet-mapping>
+    <servlet-name>FormRecipeLossServlet</servlet-name>
+    <url-pattern>/form-recipe-loss</url-pattern>
   </servlet-mapping>
 
   <!-- Sessions : expiration après 30 min d'inactivité, cookie inaccessible au JavaScript.

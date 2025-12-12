@@ -133,3 +133,12 @@ INSERT INTO production (id_recipe, id_user, quantity, production_date) VALUES
     (1, 2, 120, CURRENT_DATE - 2),
     (2, 2, 80,  CURRENT_DATE - 1),
     (8, 2, 40,  CURRENT_DATE);
+
+-- Seuil d'alerte de demo : prevenir sous 40 unites
+UPDATE recipe_stock SET seuil_alerte = 40;
+
+-- Pertes constatees : invendus de fin de journee, casse, peremption
+INSERT INTO recipe_loss (id_recipe, id_user, quantity, reason, loss_date) VALUES
+    (1, 1, 12, 'INVENDU', CURRENT_DATE - 2),
+    (2, 2, 5,  'CASSE',   CURRENT_DATE - 1),
+    (8, 1, 3,  'PERIME',  CURRENT_DATE);

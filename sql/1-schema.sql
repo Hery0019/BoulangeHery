@@ -126,7 +126,20 @@ CREATE TABLE recipe_stock (
     id_recipe_stock SERIAL PRIMARY KEY,
     id_recipe INT NOT NULL UNIQUE,
     reste INT NOT NULL CHECK (reste >= 0),
+    seuil_alerte INT NOT NULL DEFAULT 0 CHECK (seuil_alerte >= 0), -- 0 = pas d'alerte
     FOREIGN KEY (id_recipe) REFERENCES recipe(id_recipe) ON DELETE CASCADE
+);
+
+-- Sorties de stock constatées hors vente : invendus, casse, péremption, dons.
+CREATE TABLE recipe_loss (
+    id_recipe_loss SERIAL PRIMARY KEY,
+    id_recipe INT NOT NULL,
+    id_user INT, -- auteur du constat ; NULL si le compte est supprimé
+    quantity INT NOT NULL CHECK (quantity > 0),
+    reason VARCHAR(20) NOT NULL CHECK (reason IN ('INVENDU', 'CASSE', 'PERIME', 'OFFERT')),
+    loss_date DATE NOT NULL DEFAULT CURRENT_DATE,
+    FOREIGN KEY (id_recipe) REFERENCES recipe(id_recipe) ON DELETE CASCADE,
+    FOREIGN KEY (id_user) REFERENCES gotta_taste_user(id_user) ON DELETE SET NULL
 );
 
 CREATE TABLE ingredient_stock (
@@ -199,3 +212,7 @@ CREATE INDEX IF NOT EXISTS idx_price_history_date ON recipe_price_history (chang
 -- Production
 CREATE INDEX IF NOT EXISTS idx_production_recipe ON production (id_recipe);
 CREATE INDEX IF NOT EXISTS idx_production_date ON production (production_date);
+
+-- Pertes
+CREATE INDEX IF NOT EXISTS idx_recipe_loss_recipe ON recipe_loss (id_recipe);
+CREATE INDEX IF NOT EXISTS idx_recipe_loss_date ON recipe_loss (loss_date);
