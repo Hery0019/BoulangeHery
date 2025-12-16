@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import dao.Category;
 import dao.Perfume;
 import dao.Recipe;
+import dao.User;
 import util.Params;
 import util.SessionUtils;
 
@@ -28,10 +29,12 @@ public class FormRecipeServlet extends HttpServlet {
         Recipe recipe = new Recipe();
         ArrayList<Category> categories;
         ArrayList<Perfume> perfumes;
+        ArrayList<User> users;
 
         try {
             categories = Category.all();
             perfumes = Perfume.all();
+            users = User.all();
         } catch (Exception e) {
             throw new ServletException(e);
         }
@@ -52,6 +55,7 @@ public class FormRecipeServlet extends HttpServlet {
         req.setAttribute("recipe", recipe);
         req.setAttribute("categories", categories);
         req.setAttribute("perfumes", perfumes);
+        req.setAttribute("users", users);
         req.setAttribute("activeMenuItem", "recipe");
         req.setAttribute("pageTitle", "Recette");
 

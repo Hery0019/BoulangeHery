@@ -27,15 +27,15 @@ INSERT INTO ingredient (ingredient_name, unit, price) VALUES
     ('Creme patissiere', 'litre', 5);
 
 -- Inserer des recettes de boulangerie avec des prix
-INSERT INTO recipe (title, recipe_description, id_category, id_perfume, cook_time, created_by, created_date, price, picture) VALUES  
-    ('Baguette Tradition', 'Une baguette classique a la croute doree.', 1, 1, '00:00:00', 'Marie Boulanger', '2024-01-30', 1500, 'assets/img/recipies/baguette.jpeg'),
-    ('Croissant', 'Un croissant feuillete au beurre.', 2, 1, '00:00:00', 'Paul Patissier', '2025-01-12', 2500, 'assets/img/recipies/croissants.jpg'),
-    ('Pain de Campagne', 'Un pain rustique au gout de tradition.', 1, 1, '00:00:00', 'Marie Boulanger', '2025-01-30', 2000, 'assets/img/recipies/pain-de-campagne.jpg'),
-    ('Pain Complet', 'Un pain riche en fibres, parfait pour la sante.', 1, 1, '00:00:00', 'Marie Boulanger', '2025-01-03', 1800, 'assets/img/recipies/brioche-tressee.jpg'),
-    ('Brioche Tressee', 'Une brioche moelleuse et sucree.', 2, 1, '00:00:00', 'Paul Patissier', '2024-12-11', 3000 , 'assets/img/recipies/brioche-tressee.jpg'),
-    ('Pain au Chocolat', 'Une viennoiserie gourmande au chocolat.', 2, 2, '00:00:00', 'Paul Patissier', '2025-01-01', 2800, 'assets/img/recipies/pain-au-chocolat.jpeg'),
-    ('Eclair au Chocolat', 'Un classique patissier garni de creme au chocolat.', 3, 2, '00:00:00', 'Paul Patissier', '2024-11-30', 3500, 'assets/img/recipies/eclair-choco.jpg'),
-    ('Tarte aux Pommes', 'Une tarte delicieuse avec des pommes caramelisees.', 3, 3, '00:00:00', 'Marie Boulanger', '2025-01-19', 4000, 'assets/img/recipies/tarte-pomme.jpg');
+INSERT INTO recipe (title, recipe_description, id_category, id_perfume, cook_time, id_created_by, created_date, price, picture) VALUES  
+    ('Baguette Tradition', 'Une baguette classique a la croute doree.', 1, 1, '00:00:00', 1, '2024-01-30', 1500, 'assets/img/recipies/baguette.jpeg'),
+    ('Croissant', 'Un croissant feuillete au beurre.', 2, 1, '00:00:00', 2, '2025-01-12', 2500, 'assets/img/recipies/croissants.jpg'),
+    ('Pain de Campagne', 'Un pain rustique au gout de tradition.', 1, 1, '00:00:00', 1, '2025-01-30', 2000, 'assets/img/recipies/pain-de-campagne.jpg'),
+    ('Pain Complet', 'Un pain riche en fibres, parfait pour la sante.', 1, 1, '00:00:00', 1, '2025-01-03', 1800, 'assets/img/recipies/brioche-tressee.jpg'),
+    ('Brioche Tressee', 'Une brioche moelleuse et sucree.', 2, 1, '00:00:00', 2, '2024-12-11', 3000 , 'assets/img/recipies/brioche-tressee.jpg'),
+    ('Pain au Chocolat', 'Une viennoiserie gourmande au chocolat.', 2, 2, '00:00:00', 2, '2025-01-01', 2800, 'assets/img/recipies/pain-au-chocolat.jpeg'),
+    ('Eclair au Chocolat', 'Un classique patissier garni de creme au chocolat.', 3, 2, '00:00:00', 2, '2024-11-30', 3500, 'assets/img/recipies/eclair-choco.jpg'),
+    ('Tarte aux Pommes', 'Une tarte delicieuse avec des pommes caramelisees.', 3, 3, '00:00:00', 1, '2025-01-19', 4000, 'assets/img/recipies/tarte-pomme.jpg');
 
 
 -- Associer les ingredients aux recettes

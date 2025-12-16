@@ -144,12 +144,21 @@
                                             >
                                         </div> 
                                         <div class="mb-3">
-                                            <label class="form-label" for="recipeCreator">Créé par</label>
-                                            <input value="<%= Html.esc(recipe.getCreatedBy()) %>" name="recipeCreator" type="text"
-                                                   class="form-control" id="recipeCreator"
-                                                   placeholder="Nom du créateur"
-                                                   required
-                                            />
+                                            <label class="form-label" for="recipeIdCreatedBy">Créé par</label>
+                                            <%
+                                                dao.User connectedUser = SessionUtils.getConnectedUser(request);
+                                                int selectedAuthor = recipe.getIdCreatedBy() != 0
+                                                        ? recipe.getIdCreatedBy()
+                                                        : (connectedUser == null ? 0 : connectedUser.getId());
+                                            %>
+                                            <select name="recipeIdCreatedBy" class="form-select" id="recipeIdCreatedBy" required>
+                                                <% for (dao.User user : (java.util.ArrayList<dao.User>) request.getAttribute("users")) { %>
+                                                <option value="<%= Html.esc(user.getId()) %>"
+                                                        <% if (user.getId() == selectedAuthor) { %>selected<% } %>>
+                                                    <%= Html.esc(user.getFullName()) %>
+                                                </option>
+                                                <% } %>
+                                            </select>
                                         </div> 
                                         <div class="mb-3">
                                             <label class="form-label" for="recipeCreationDate">Date de création</label>

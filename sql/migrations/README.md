@@ -20,3 +20,4 @@
 | 010 | Rôles des comptes (ADMIN, BOULANGER, VENDEUR) |
 | 011 | Stock de matières premières et ordres de production |
 | 012 | Pertes (invendus, casse…) et seuil d'alerte de stock |
+| 013 | Auteur d'une recette rattaché au compte utilisateur |

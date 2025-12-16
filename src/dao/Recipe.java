@@ -29,6 +29,8 @@ public class Recipe {
     /** Stock de produit fini et seuil d'alerte, lus dans recipe_stock. */
     private int stock = 0;
     private int seuilAlerte = 0;
+    /** Compte auteur ; 0 tant que la recette n'est pas rattachée. */
+    private int idCreatedBy = 0;
 
     private static final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
     private static final DateTimeFormatter humanTimeFormatter = new DateTimeFormatterBuilder()
@@ -45,10 +47,13 @@ public class Recipe {
 
     /** Recette et son coût matière : la vue fournit une ligne par recette. */
     private static final String SELECT_WITH_COST =
-            "SELECT r.*, c.cost, COALESCE(s.reste, 0) AS stock, COALESCE(s.seuil_alerte, 0) AS seuil_alerte"
+            "SELECT r.*, c.cost, COALESCE(s.reste, 0) AS stock, COALESCE(s.seuil_alerte, 0) AS seuil_alerte,"
+                    // Auteur : le compte rattaché, ou l'ancien texte libre des recettes non rattachées
+                    + " COALESCE(u.firstname || ' ' || u.lastname, r.created_by, '') AS author"
                     + " FROM recipe r"
                     + " JOIN recipe_cost c ON c.id_recipe = r.id_recipe"
-                    + " LEFT JOIN recipe_stock s ON s.id_recipe = r.id_recipe";
+                    + " LEFT JOIN recipe_stock s ON s.id_recipe = r.id_recipe"
+                    + " LEFT JOIN gotta_taste_user u ON u.id_user = r.id_created_by";
 
     public Recipe() {
     }
@@ -126,7 +131,7 @@ public class Recipe {
                 int idCategory = resultSet.getInt("id_category");
                 int idPerfume = resultSet.getInt("id_perfume");
                 LocalTime cookTime = resultSet.getTime("cook_time").toLocalTime();
-                String createdBy = resultSet.getString("created_by");
+                String createdBy = resultSet.getString("author");
                 LocalDate createdDate = resultSet.getDate("created_date").toLocalDate();
                 double price = resultSet.getDouble("price");
                 String picture = resultSet.getString("picture");
@@ -135,6 +140,7 @@ public class Recipe {
                         createdDate, price, picture);
                 recipe.setCost(resultSet.getDouble("cost"));
                 recipe.setStock(resultSet.getInt("stock"), resultSet.getInt("seuil_alerte"));
+                recipe.setIdCreatedBy(resultSet.getInt("id_created_by"));
                 recipes.add(recipe);
             }
         } catch (Exception e) {
@@ -173,13 +179,14 @@ public class Recipe {
                 idCategory = resultSet.getInt("id_category");
                 idPerfume = resultSet.getInt("id_perfume");
                 cookTime = resultSet.getTime("cook_time").toLocalTime();
-                createdBy = resultSet.getString("created_by");
+                createdBy = resultSet.getString("author");
                 createdDate = resultSet.getDate("created_date").toLocalDate();
                 price = resultSet.getDouble("price");
                 picture = resultSet.getString("picture");
                 cost = resultSet.getDouble("cost");
                 stock = resultSet.getInt("stock");
                 seuilAlerte = resultSet.getInt("seuil_alerte");
+                idCreatedBy = resultSet.getInt("id_created_by");
             }
         } catch (Exception e) {
             throw e;
@@ -216,12 +223,13 @@ public class Recipe {
                 recipe.setIdCategory(resultSet.getInt("id_category"));
                 recipe.setIdPerfume(resultSet.getInt("id_perfume"));
                 recipe.setCookTime(resultSet.getTime("cook_time").toLocalTime());
-                recipe.setCreatedBy(resultSet.getString("created_by"));
+                recipe.setCreatedBy(resultSet.getString("author"));
                 recipe.setCreatedDate(resultSet.getDate("created_date").toLocalDate());
                 recipe.setPrice(resultSet.getDouble("price"));
                 recipe.setPicture(resultSet.getString("picture"));
                 recipe.setCost(resultSet.getDouble("cost"));
                 recipe.setStock(resultSet.getInt("stock"), resultSet.getInt("seuil_alerte"));
+                recipe.setIdCreatedBy(resultSet.getInt("id_created_by"));
                 return recipe;
             }
         } catch (Exception e) {
@@ -250,14 +258,14 @@ public class Recipe {
             connection = DBConnection.getPostgesConnection();
             connection.setAutoCommit(false);
             statement = connection.prepareStatement(
-                    "INSERT INTO recipe(title, recipe_description, id_category, id_perfume, cook_time, created_by, created_date, price, picture)"
+                    "INSERT INTO recipe(title, recipe_description, id_category, id_perfume, cook_time, id_created_by, created_date, price, picture)"
                             + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
             statement.setString(1, title);
             statement.setString(2, description);
             statement.setInt(3, idCategory);
             statement.setInt(4, idPerfume);
             statement.setTime(5, Time.valueOf(cookTime));
-            statement.setString(6, createdBy);
+            statement.setInt(6, idCreatedBy);
             statement.setDate(7, Date.valueOf(createdDate));
             statement.setDouble(8, price);
             statement.setString(9, picture); // null si aucune photo n'a été envoyée
@@ -281,7 +289,8 @@ public class Recipe {
             // cook_time n'est pas modifiable ici : il est recalculé par trigger depuis les étapes.
             statement = connection.prepareStatement(
                     "UPDATE recipe"
-                            + " SET title = ?, recipe_description = ?, id_category = ?, id_perfume = ?, created_by = ?, created_date = ?, price = ?,"
+                            + " SET title = ?, recipe_description = ?, id_category = ?, id_perfume = ?,"
+                            + " id_created_by = ?, created_by = NULL, created_date = ?, price = ?,"
                             // photo laissée telle quelle quand le formulaire n'en envoie pas de nouvelle
                             + " picture = COALESCE(NULLIF(?, ''), picture)"
                             + " WHERE id_recipe = ?");
@@ -289,7 +298,7 @@ public class Recipe {
             statement.setString(2, description);
             statement.setInt(3, idCategory);
             statement.setInt(4, idPerfume);
-            statement.setString(5, createdBy);
+            statement.setInt(5, idCreatedBy);
             statement.setDate(6, Date.valueOf(createdDate));
             statement.setDouble(7, price);
             statement.setString(8, picture);
@@ -344,7 +353,7 @@ public class Recipe {
             if (maxCookTime != null) {
                 sql.append(" AND cook_time <= ?");
             }
-            sql.append(" AND created_by ILIKE ?");
+            sql.append(" AND COALESCE(u.firstname || ' ' || u.lastname, r.created_by, '') ILIKE ?");
 
             if (minCreationDate != null) {
                 sql.append(" AND created_date >= ?");
@@ -422,7 +431,7 @@ public class Recipe {
                 int idCategory = resultSet.getInt("id_category");
                 int idPerfume = resultSet.getInt("id_perfume");
                 LocalTime cookTime = resultSet.getTime("cook_time").toLocalTime();
-                String createdBy = resultSet.getString("created_by");
+                String createdBy = resultSet.getString("author");
                 LocalDate createdDate = resultSet.getDate("created_date").toLocalDate();
                 double price = resultSet.getDouble("price");
                 String picture = resultSet.getString("picture");
@@ -431,6 +440,7 @@ public class Recipe {
                         createdDate, price, picture);
                 recipe.setCost(resultSet.getDouble("cost"));
                 recipe.setStock(resultSet.getInt("stock"), resultSet.getInt("seuil_alerte"));
+                recipe.setIdCreatedBy(resultSet.getInt("id_created_by"));
                 recipes.add(recipe);
             }
         } catch (Exception e) {
@@ -503,6 +513,14 @@ public class Recipe {
 
     public void setCost(double cost) {
         this.cost = cost;
+    }
+
+    public int getIdCreatedBy() {
+        return idCreatedBy;
+    }
+
+    public void setIdCreatedBy(int idCreatedBy) {
+        this.idCreatedBy = idCreatedBy;
     }
 
     public int getStock() {

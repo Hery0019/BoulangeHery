@@ -30,12 +30,14 @@ CREATE TABLE recipe (
     id_category INT NOT NULL,
     id_perfume INT NOT NULL,
     cook_time TIME NOT NULL,
-    created_by VARCHAR(255) NOT NULL,
+    id_created_by INT, -- compte auteur ; NULL si le compte a été supprimé
+    created_by VARCHAR(255), -- auteur en texte libre, conservé pour les recettes non rattachées
     created_date DATE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     price DECIMAL(10,2) NOT NULL,
     picture VARCHAR(255),
     FOREIGN KEY (id_category) REFERENCES category(id_category) ON DELETE RESTRICT,
-    FOREIGN KEY (id_perfume) REFERENCES perfume(id_perfume) ON DELETE RESTRICT
+    FOREIGN KEY (id_perfume) REFERENCES perfume(id_perfume) ON DELETE RESTRICT,
+    FOREIGN KEY (id_created_by) REFERENCES gotta_taste_user(id_user) ON DELETE SET NULL
 );
 
 
@@ -180,6 +182,7 @@ GROUP BY r.id_recipe;
 -- Recettes : filtres de la recherche multicritère
 CREATE INDEX IF NOT EXISTS idx_recipe_category ON recipe (id_category);
 CREATE INDEX IF NOT EXISTS idx_recipe_perfume ON recipe (id_perfume);
+CREATE INDEX IF NOT EXISTS idx_recipe_created_by ON recipe (id_created_by);
 
 -- Composition : le sens id_ingredient -> recettes n'est pas couvert par la clé primaire
 CREATE INDEX IF NOT EXISTS idx_recipe_ingredient_ingredient ON recipe_ingredient (id_ingredient);

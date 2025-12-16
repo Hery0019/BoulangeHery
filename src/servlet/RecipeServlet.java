@@ -90,11 +90,12 @@ public class RecipeServlet extends HttpServlet {
         int idCategory = Params.requiredInt(req, "recipeIdCategory");
         int idPerfume = Params.requiredInt(req, "recipeIdPerfume");
         LocalTime cookTime = Params.requiredTime(req, "recipeCookTime");
-        String createdBy = Params.requiredString(req, "recipeCreator");
+        int idCreatedBy = Params.requiredInt(req, "recipeIdCreatedBy");
         double price = Params.requiredDouble(req, "recipePrice");
         LocalDate createdDate = Params.requiredDate(req, "recipeCreationDate");
-        Recipe recipe = new Recipe(id, title, description, idCategory, idPerfume, cookTime, createdBy, createdDate,
+        Recipe recipe = new Recipe(id, title, description, idCategory, idPerfume, cookTime, "", createdDate,
                 price);
+        recipe.setIdCreatedBy(idCreatedBy);
         // Photo facultative : absente, la recette garde l'image qu'elle avait.
         recipe.setPicture(Pictures.store(req, "recipePicture"));
 
