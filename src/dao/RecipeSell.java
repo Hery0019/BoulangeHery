@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -16,6 +17,15 @@ public class RecipeSell {
     private int idRecipe = 1;
     private int idCategory = 1;
     private int idUser = 1;
+    /** Acheteur ; 0 pour une vente au comptoir. */
+    private int idClient = 0;
+    // Libellés lus par la même requête : la liste affichait ces noms en
+    // rappelant findById pour chaque ligne, soit quatre requêtes par vente.
+    private String recipeTitle = "";
+    private String categoryName = "";
+    private String clientName = "";
+    private String userName = "";
+    private String vendeurName = "";
     private int combien = 0;
     private double argent = 0.0;
     private double reste = 0.0;
@@ -23,6 +33,19 @@ public class RecipeSell {
 
     private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter humanDateFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.FRENCH);
+
+    /** Vente et libellés associés, pour éviter une requête par ligne à l'affichage. */
+    private static final String SELECT_JOINED =
+            "SELECT s.*, r.title, cat.category_name,"
+                    + " COALESCE(cl.firstname || ' ' || cl.lastname, '') AS client_name,"
+                    + " COALESCE(u.firstname || ' ' || u.lastname, '') AS user_name,"
+                    + " COALESCE(v.firstname || ' ' || v.lastname, '') AS vendeur_name"
+                    + " FROM recipe_sell s"
+                    + " JOIN recipe r ON r.id_recipe = s.id_recipe"
+                    + " JOIN category cat ON cat.id_category = s.id_category"
+                    + " LEFT JOIN client cl ON cl.id_client = s.id_client"
+                    + " LEFT JOIN gotta_taste_user u ON u.id_user = s.id_user"
+                    + " LEFT JOIN vendeur v ON v.id_vendeur = s.id_vendeur";
 
     public RecipeSell() {
     }
@@ -93,8 +116,15 @@ public class RecipeSell {
                 double reste = resultSet.getDouble("reste");
                 LocalDate sellDate = resultSet.getDate("sell_date").toLocalDate();
 
-                recipeSells.add(
-                        new RecipeSell(id, idVendeur, idRecipe, idCategory, idUser, combien, argent, reste, sellDate));
+                RecipeSell recipeSell =
+                        new RecipeSell(id, idVendeur, idRecipe, idCategory, idUser, combien, argent, reste, sellDate);
+                recipeSell.idClient = resultSet.getInt("id_client");
+                recipeSell.recipeTitle = resultSet.getString("title");
+                recipeSell.categoryName = resultSet.getString("category_name");
+                recipeSell.clientName = resultSet.getString("client_name");
+                recipeSell.userName = resultSet.getString("user_name");
+                recipeSell.vendeurName = resultSet.getString("vendeur_name");
+                recipeSells.add(recipeSell);
             }
         } catch (Exception e) {
             throw e;
@@ -131,6 +161,7 @@ public class RecipeSell {
                 idVendeur = resultSet.getInt("id_vendeur");
                 idCategory = resultSet.getInt("id_category");
                 idUser = resultSet.getInt("id_user");
+                idClient = resultSet.getInt("id_client");
                 combien = resultSet.getInt("combien");
                 argent = resultSet.getDouble("argent");
                 reste = resultSet.getDouble("reste");
@@ -159,16 +190,17 @@ public class RecipeSell {
             connection = DBConnection.getPostgesConnection();
             connection.setAutoCommit(false);
             statement = connection.prepareStatement(
-                    "INSERT INTO recipe_sell(id_vendeur, id_recipe, id_category, id_user, combien, argent, reste, sell_date)"
-                            + " VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+                    "INSERT INTO recipe_sell(id_vendeur, id_recipe, id_category, id_user, id_client, combien, argent, reste, sell_date)"
+                            + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
             statement.setInt(1, idVendeur);
             statement.setInt(2, idRecipe);
             statement.setInt(3, idCategory);
             statement.setInt(4, idUser);
-            statement.setInt(5, combien);
-            statement.setDouble(6, argent);
-            statement.setDouble(7, 0.0); // calculer a partir des triggers
-            statement.setDate(8, Date.valueOf(sellDate));
+            setClient(statement, 5);
+            statement.setInt(6, combien);
+            statement.setDouble(7, argent);
+            statement.setDouble(8, 0.0); // calculé par le trigger calculate_reste
+            statement.setDate(9, Date.valueOf(sellDate));
             statement.executeUpdate();
             connection.commit();
         } catch (Exception e) {
@@ -188,16 +220,17 @@ public class RecipeSell {
             connection.setAutoCommit(false);
             statement = connection.prepareStatement(
                     "UPDATE recipe_sell"
-                            + " SET id_vendeur = ?, id_recipe = ?, id_category = ?, id_user = ?, combien = ?, argent = ?, sell_date = ?"
+                            + " SET id_vendeur = ?, id_recipe = ?, id_category = ?, id_user = ?, id_client = ?, combien = ?, argent = ?, sell_date = ?"
                             + " WHERE id_recipe_sell = ?");
             statement.setInt(1, idVendeur);
             statement.setInt(2, idRecipe);
             statement.setInt(3, idCategory);
             statement.setInt(4, idUser);
-            statement.setInt(5, combien);
-            statement.setDouble(6, argent);
-            statement.setDate(7, Date.valueOf(sellDate));
-            statement.setInt(8, id); // reste est recalculé par le trigger calculate_reste
+            setClient(statement, 5);
+            statement.setInt(6, combien);
+            statement.setDouble(7, argent);
+            statement.setDate(8, Date.valueOf(sellDate));
+            statement.setInt(9, id); // reste est recalculé par le trigger calculate_reste
             statement.executeUpdate();
             connection.commit();
         } catch (Exception e) {
@@ -213,6 +246,7 @@ public class RecipeSell {
         int searchIdRecipe,
         int searchIdCategory,
         int searchIdUser,
+        int searchIdClient,
         int minCombien,
         int maxCombien,
         double minArgent,
@@ -230,41 +264,44 @@ public class RecipeSell {
         try {
             connection = DBConnection.getPostgesConnection();
 
-            StringBuilder sql = new StringBuilder("SELECT * FROM recipe_sell WHERE 1=1");
+            StringBuilder sql = new StringBuilder(SELECT_JOINED + " WHERE 1=1");
 
 
             if (searchIdRecipe != 0) {
-                sql.append(" AND id_recipe = ?");
+                sql.append(" AND s.id_recipe = ?");
             }
             if (searchIdCategory != 0) {
-                sql.append(" AND id_category = ?");
+                sql.append(" AND s.id_category = ?");
             }
             if (searchIdUser != 0) {
-                sql.append(" AND id_user = ?");
+                sql.append(" AND s.id_user = ?");
+            }
+            if (searchIdClient != 0) {
+                sql.append(" AND s.id_client = ?");
             }
             if (minCombien != 0) {
-                sql.append(" AND combien >= ?");
+                sql.append(" AND s.combien >= ?");
             }
             if (maxCombien != 0) {
-                sql.append(" AND combien <= ?");
+                sql.append(" AND s.combien <= ?");
             }
             if (minArgent != 0.0) {
-                sql.append(" AND argent >= ?");
+                sql.append(" AND s.argent >= ?");
             }
             if (maxArgent != 0.0) {
-                sql.append(" AND argent <= ?");
+                sql.append(" AND s.argent <= ?");
             }
             if (minReste != 0.0) {
-                sql.append(" AND reste >= ?");
+                sql.append(" AND s.reste >= ?");
             }
             if (maxReste != 0.0) {
-                sql.append(" AND reste <= ?");
+                sql.append(" AND s.reste <= ?");
             }
             if (minSellDate != null) {
-                sql.append(" AND sell_date >= ?");
+                sql.append(" AND s.sell_date >= ?");
             }
             if (maxSellDate != null) {
-                sql.append(" AND sell_date <= ?");
+                sql.append(" AND s.sell_date <= ?");
             }
         
             sql.append(" ORDER BY id_recipe_sell ASC");
@@ -280,6 +317,9 @@ public class RecipeSell {
             }
             if (searchIdUser != 0) {
                 statement.setInt(paramIndex++, searchIdUser);
+            }
+            if (searchIdClient != 0) {
+                statement.setInt(paramIndex++, searchIdClient);
             }
             if (minCombien != 0) {
                 statement.setInt(paramIndex++, minCombien);
@@ -354,6 +394,45 @@ public class RecipeSell {
             if (statement != null) statement.close();
             if (connection != null) connection.close();
         }
+    }
+
+    /** Une vente au comptoir n'a pas de client : la colonne reste NULL. */
+    private void setClient(PreparedStatement statement, int index) throws SQLException {
+        if (idClient == 0) {
+            statement.setNull(index, java.sql.Types.INTEGER);
+        } else {
+            statement.setInt(index, idClient);
+        }
+    }
+
+    public int getIdClient() {
+        return idClient;
+    }
+
+    public void setIdClient(int idClient) {
+        this.idClient = idClient;
+    }
+
+    /** Nom de l'acheteur, ou « Vente au comptoir » si la vente n'en a pas. */
+    public String getClientLabel() {
+        return clientName == null || clientName.isBlank() ? "Vente au comptoir" : clientName;
+    }
+
+    public String getRecipeTitle() {
+        return recipeTitle;
+    }
+
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    /** Compte qui a saisi la vente. */
+    public String getUserName() {
+        return userName;
+    }
+
+    public String getVendeurName() {
+        return vendeurName;
     }
 
     public int getId() {

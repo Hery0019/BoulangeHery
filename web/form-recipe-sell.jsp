@@ -72,7 +72,19 @@
                                         </div>
 
                                         <div class="mb-3">
-                                            <label for="recipeSellIdUser" class="form-label">Utilisateur</label>
+                                            <label for="recipeSellIdClient" class="form-label">Client</label>
+                                            <select name="recipeSellIdClient" id="recipeSellIdClient" class="form-select">
+                                                <option value="0">Vente au comptoir</option>
+                                                <% for (dao.Client client : (java.util.ArrayList<dao.Client>) request.getAttribute("clients")) { %>
+                                                <option value="<%= Html.esc(client.getId()) %>"
+                                                        <% if (client.getId() == recipeSell.getIdClient()) { %>selected<% } %>>
+                                                    <%= Html.esc(client.getFullName()) %>
+                                                </option>
+                                                <% } %>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="recipeSellIdUser" class="form-label">Saisi par</label>
                                             <select name="recipeSellIdUser" id="recipeSellIdUser" class="form-select" required>
                                                 <% for (User user : (ArrayList<User>) request.getAttribute("users")) { %>
                                                 <option value="<%= Html.esc(user.getId()) %>" <% if (user.getId() == recipeSell.getIdUser()) { %>selected<% } %>>

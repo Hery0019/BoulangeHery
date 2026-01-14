@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import dao.BusinessRuleException;
 import dao.Category;
+import dao.Client;
 import dao.Recipe;
 import dao.RecipeSell;
 import dao.User;
@@ -32,6 +33,7 @@ public class RecipeSellServlet extends HttpServlet {
             int idRecipe = Params.intValue(req, "searchIdRecipe", 0);
             int idCategory = Params.intValue(req, "searchIdCategory", 0);
             int idUser = Params.intValue(req, "searchIdUser", 0);
+            int idClient = Params.intValue(req, "searchIdClient", 0);
             int minCombien = Params.intValue(req, "searchMinCombien", 0);
             int maxCombien = Params.intValue(req, "searchMaxCombien", 0);
             double minArgent = Params.doubleValue(req, "searchMinArgent", 0.0);
@@ -41,7 +43,7 @@ public class RecipeSellServlet extends HttpServlet {
             LocalDate minSellDate = Params.date(req, "searchMinSellDate");
             LocalDate maxSellDate = Params.date(req, "searchMaxSellDate");
 
-            ArrayList<RecipeSell> recipeSells = RecipeSell.search(idRecipe, idCategory, idUser, minCombien,
+            ArrayList<RecipeSell> recipeSells = RecipeSell.search(idRecipe, idCategory, idUser, idClient, minCombien,
                     maxCombien, minArgent, maxArgent, minReste, maxReste, minSellDate, maxSellDate);
 
             req.setAttribute("recipeSells", recipeSells);
@@ -49,6 +51,7 @@ public class RecipeSellServlet extends HttpServlet {
             req.setAttribute("recipies", recipies);
             req.setAttribute("vendeurs", vendeurs);
             req.setAttribute("users", users);
+            req.setAttribute("clients", Client.all());
             req.setAttribute("activeMenuItem", "recipe-sell");
             req.setAttribute("pageTitle", "Vente de recette");
 
@@ -76,6 +79,8 @@ public class RecipeSellServlet extends HttpServlet {
         int idRecipe = Params.requiredInt(req, "idRecipe");
         int idVendeur = Params.requiredInt(req, "recipeSellerId");
         int idUser = Params.requiredInt(req, "recipeSellIdUser");
+        // Client facultatif : 0 signifie vente au comptoir
+        int idClient = Params.intValue(req, "recipeSellIdClient", 0);
         int combien = Params.requiredInt(req, "recipeSellCombien");
         double argent = Params.requiredDouble(req, "recipeSellArgent");
         LocalDate sellDate = Params.requiredDate(req, "recipeSellDate");
@@ -96,6 +101,7 @@ public class RecipeSellServlet extends HttpServlet {
         // reste est calculé par le trigger calculate_reste
         RecipeSell recipeSell = new RecipeSell(id, idVendeur, idRecipe, idCategory, idUser, combien, argent, 0.0,
                 sellDate);
+        recipeSell.setIdClient(idClient);
 
         try {
             if (update) {

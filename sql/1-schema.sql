@@ -96,12 +96,22 @@ CREATE TABLE review (
     FOREIGN KEY (id_recipe) REFERENCES recipe(id_recipe) ON DELETE CASCADE
 );
 
+CREATE TABLE client (
+    id_client SERIAL PRIMARY KEY,
+    firstname VARCHAR(100) NOT NULL,
+    lastname VARCHAR(100) NOT NULL,
+    phone VARCHAR(30),
+    email VARCHAR(100) UNIQUE,
+    created_date DATE NOT NULL DEFAULT CURRENT_DATE
+);
+
 CREATE TABLE recipe_sell (
     id_recipe_sell SERIAL PRIMARY KEY,
     id_vendeur INT NOT NULL,
     id_recipe INT NOT NULL,
     id_category INT NOT NULL,
-    id_user INT NOT NULL,
+    id_user INT NOT NULL, -- compte qui a saisi la vente
+    id_client INT, -- acheteur ; NULL pour une vente au comptoir
     combien INT NOT NULL,
     argent DECIMAL(10,2) NOT NULL,
     reste DECIMAL(10,2) NOT NULL CHECK (reste >= 0),
@@ -109,7 +119,8 @@ CREATE TABLE recipe_sell (
     FOREIGN KEY (id_recipe) REFERENCES recipe(id_recipe) ON DELETE RESTRICT,
     FOREIGN KEY (id_vendeur) REFERENCES vendeur(id_vendeur) ON DELETE RESTRICT,
     FOREIGN KEY (id_category) REFERENCES category(id_category) ON DELETE RESTRICT,
-    FOREIGN KEY (id_user) REFERENCES gotta_taste_user(id_user) ON DELETE RESTRICT
+    FOREIGN KEY (id_user) REFERENCES gotta_taste_user(id_user) ON DELETE RESTRICT,
+    FOREIGN KEY (id_client) REFERENCES client(id_client) ON DELETE RESTRICT
 );
 
 CREATE TABLE commission (
@@ -197,6 +208,7 @@ CREATE INDEX IF NOT EXISTS idx_recipe_sell_recipe ON recipe_sell (id_recipe);
 CREATE INDEX IF NOT EXISTS idx_recipe_sell_vendeur ON recipe_sell (id_vendeur);
 CREATE INDEX IF NOT EXISTS idx_recipe_sell_category ON recipe_sell (id_category);
 CREATE INDEX IF NOT EXISTS idx_recipe_sell_user ON recipe_sell (id_user);
+CREATE INDEX IF NOT EXISTS idx_recipe_sell_client ON recipe_sell (id_client);
 CREATE INDEX IF NOT EXISTS idx_recipe_sell_date ON recipe_sell (sell_date);
 
 -- Commissions : la clé étrangère vers la vente sert au recalcul par trigger

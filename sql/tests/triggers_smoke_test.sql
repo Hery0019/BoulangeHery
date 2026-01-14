@@ -24,6 +24,12 @@ DECLARE
     -- quelles que soient les quantités posées par les données de démonstration.
     v_stock1     INT;
     v_stock8     INT;
+    -- Prix courants : les données de démo font varier les prix pour alimenter
+    -- l'historique, le scénario les relit au lieu de les supposer.
+    v_price1     NUMERIC;
+    v_price8     NUMERIC;
+    v_rate       NUMERIC;
+    v_floor      NUMERIC;
 BEGIN
     -- Données de démo attendues : recette 1 = Baguette 1500, recette 8 = Tarte 4000,
     -- règle de commission 5 % au-delà de 200 000.
@@ -31,14 +37,20 @@ BEGIN
     SELECT reste INTO v_stock8 FROM recipe_stock WHERE id_recipe = 8;
     ASSERT v_stock1 >= 10 AND v_stock8 >= 1, 'les données de démo doivent fournir du stock';
     ASSERT (SELECT count(*) FROM recipe_stock) = (SELECT count(*) FROM recipe), 'une ligne de stock par recette';
+    SELECT price INTO v_price1 FROM recipe WHERE id_recipe = 1;
+    SELECT price INTO v_price8 FROM recipe WHERE id_recipe = 8;
+    SELECT percent, commission_change_value INTO v_rate, v_floor
+    FROM commission_change ORDER BY commission_change_date DESC, id_commission_change DESC LIMIT 1;
     RAISE NOTICE 'OK  stock initial : une ligne par recette';
 
     -- 1. Vente simple : reste calculé, stock décrémenté, pas de commission sous le seuil
     INSERT INTO recipe_sell (id_vendeur, id_recipe, id_category, id_user, combien, argent, reste, sell_date)
     VALUES (1, 1, 1, 1, 10, 20000, 0, CURRENT_DATE) RETURNING id_recipe_sell, reste INTO v_sale, v_reste;
-    ASSERT v_reste = 5000, 'reste = argent - combien * prix (attendu 5000, obtenu ' || v_reste || ')';
+    ASSERT v_reste = 20000 - 10 * v_price1,
+        'reste = argent - combien * prix (attendu ' || (20000 - 10 * v_price1) || ', obtenu ' || v_reste || ')';
     ASSERT (SELECT reste FROM recipe_stock WHERE id_recipe = 1) = v_stock1 - 10, 'stock décrémenté de 10';
-    ASSERT (SELECT count(*) FROM commission WHERE id_recipe_sell = v_sale) = 0, 'pas de commission sous 200 000';
+    ASSERT 10 * v_price1 < v_floor, 'la vente d''essai doit rester sous le seuil de commission';
+    ASSERT (SELECT count(*) FROM commission WHERE id_recipe_sell = v_sale) = 0, 'pas de commission sous le seuil';
     RAISE NOTICE 'OK  vente : reste, stock, seuil de commission';
 
     -- 2. Stock insuffisant : refus avec message explicite, stock inchangé
@@ -57,17 +69,20 @@ BEGIN
     INSERT INTO recipe_stock (id_recipe, reste) VALUES (8, 250 - v_stock8)
     ON CONFLICT (id_recipe) DO UPDATE SET reste = recipe_stock.reste + EXCLUDED.reste;
     INSERT INTO recipe_sell (id_vendeur, id_recipe, id_category, id_user, combien, argent, reste, sell_date)
-    VALUES (3, 8, 3, 1, 200, 900000, 0, CURRENT_DATE) RETURNING id_recipe_sell INTO v_sale;
+    VALUES (3, 8, 3, 1, 200, 200 * v_price8, 0, CURRENT_DATE) RETURNING id_recipe_sell INTO v_sale;
     ASSERT (SELECT reste FROM recipe_stock WHERE id_recipe = 8) = 50, 'stock 250 - 200 = 50';
     SELECT commission_amount INTO v_commission FROM commission WHERE id_recipe_sell = v_sale;
-    ASSERT v_commission = 40000, 'commission 5 % de 800 000 (obtenu ' || COALESCE(v_commission::text, 'aucune') || ')';
+    ASSERT v_commission = 200 * v_price8 * v_rate,
+        'commission = taux x montant vendu (attendu ' || (200 * v_price8 * v_rate)
+        || ', obtenu ' || COALESCE(v_commission::text, 'aucune') || ')';
     RAISE NOTICE 'OK  approvisionnement, commission calculée et liée à la vente';
 
     -- 4. Modification de la vente : stock réajusté, commission recalculée (une seule ligne)
-    UPDATE recipe_sell SET combien = 100, argent = 500000 WHERE id_recipe_sell = v_sale;
+    UPDATE recipe_sell SET combien = 100, argent = 100 * v_price8 WHERE id_recipe_sell = v_sale;
     ASSERT (SELECT reste FROM recipe_stock WHERE id_recipe = 8) = 150, 'stock restitué puis reconsommé : 150';
     SELECT count(*), max(commission_amount) INTO v_count, v_commission FROM commission WHERE id_recipe_sell = v_sale;
-    ASSERT v_count = 1 AND v_commission = 20000, 'commission recalculée à 20 000 en une ligne';
+    ASSERT v_count = 1 AND v_commission = 100 * v_price8 * v_rate,
+        'commission recalculée en une seule ligne (obtenu ' || COALESCE(v_commission::text, 'aucune') || ')';
     RAISE NOTICE 'OK  modification de vente : stock et commission cohérents';
 
     -- 5. Suppression de la vente : stock restitué, commission supprimée
@@ -80,7 +95,7 @@ BEGIN
     BEGIN
         INSERT INTO recipe_sell (id_vendeur, id_recipe, id_category, id_user, combien, argent, reste, sell_date)
         VALUES (1, 1, 1, 1, 1, 100, 0, CURRENT_DATE);
-        RAISE EXCEPTION 'une vente payée 100 pour un prix de 1500 aurait dû être refusée';
+        RAISE EXCEPTION 'une vente payée 100 pour un prix de % aurait dû être refusée', v_price1;
     EXCEPTION WHEN check_violation THEN
         GET STACKED DIAGNOSTICS v_msg = CONSTRAINT_NAME;
         ASSERT v_msg = 'recipe_sell_reste_check', 'contrainte attendue recipe_sell_reste_check, obtenu ' || v_msg;
@@ -90,7 +105,7 @@ BEGIN
 
     -- 7. Vente antérieure à toute règle de commission : acceptée, sans commission
     INSERT INTO recipe_sell (id_vendeur, id_recipe, id_category, id_user, combien, argent, reste, sell_date)
-    VALUES (2, 8, 3, 1, 100, 400000, 0, CURRENT_DATE - 1) RETURNING id_recipe_sell INTO v_sale;
+    VALUES (2, 8, 3, 1, 100, 100 * v_price8, 0, CURRENT_DATE - 1) RETURNING id_recipe_sell INTO v_sale;
     ASSERT (SELECT count(*) FROM commission WHERE id_recipe_sell = v_sale) = 0, 'aucune règle applicable hier';
     RAISE NOTICE 'OK  vente sans règle applicable : pas de commission, pas de blocage';
 

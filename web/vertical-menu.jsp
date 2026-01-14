@@ -77,6 +77,16 @@
         <% } %>
 
         <% if (menuSales) { %>
+        <!-- Clients -->
+        <li class="menu-item <% if (activeMenuItem.equals("client")) { %>active<% } %>">
+            <a href="client" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-user"></i>
+                <div>Clients</div>
+            </a>
+        </li>
+        <% } %>
+
+        <% if (menuSales) { %>
         <li class="menu-item <% if (activeMenuItem.equals("recipe-sell")) { %>active<% } %>">
             <a href="recipe-sell" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-cart"></i>

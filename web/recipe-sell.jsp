@@ -86,13 +86,13 @@
                                             </select>
                                         </div>
                                         <div class="mb-3">
-                                            <label class="form-label" for="search-user">Utilisateurs</label>
-                                            <select name="searchIdUser" class="form-select" id="search-user"
-                                                    aria-label="Recherche Utilisateur">
-                                                <option selected value="0">Tous les utilisateurs</option>
-                                                <% for (User user : (ArrayList<User>) request.getAttribute("users")) { %>
-                                                <option value="<%= Html.esc(user.getId()) %>">
-                                                    <%= Html.esc(user.getFullName()) %>
+                                            <label for="search-client" class="form-label">Client</label>
+                                            <select name="searchIdClient" class="form-select" id="search-client">
+                                                <option value="0">Tous les clients</option>
+                                                <% for (dao.Client client : (ArrayList<dao.Client>) request.getAttribute("clients")) { %>
+                                                <option value="<%= Html.esc(client.getId()) %>"
+                                                        <% if (String.valueOf(client.getId()).equals(request.getParameter("searchIdClient"))) { %>selected<% } %>>
+                                                    <%= Html.esc(client.getFullName()) %>
                                                 </option>
                                                 <% } %>
                                             </select>
@@ -200,6 +200,7 @@
                                     <th>Client</th>
                                     <th>Recettes</th>
                                     <th>Categories</th>
+                                    <th>Vendeur</th>
                                     <th>Combien</th>
                                     <th>Argent</th>
                                     <th>Reste</th>
@@ -212,11 +213,13 @@
                                     <tr>
                                         <td><strong><%= Html.esc(recipeSell.getId()) %>
                                         </strong></td>
-                                        <td><%= Html.esc((User.findById(recipeSell.getIdUser())).getFullName()) %>
+                                        <td><%= Html.esc(recipeSell.getClientLabel()) %>
                                         </td>
-                                        <td><%= Html.esc((Recipe.findById(recipeSell.getIdRecipe())).getTitle()) %>
+                                        <td><%= Html.esc(recipeSell.getRecipeTitle()) %>
                                         </td>
-                                        <td><%= Html.esc((Category.findById(recipeSell.getIdCategory())).getName()) %>
+                                        <td><%= Html.esc(recipeSell.getCategoryName()) %>
+                                        </td>
+                                        <td><%= Html.esc(recipeSell.getVendeurName()) %>
                                         </td>
                                         <td><%= Html.esc(recipeSell.getCombien()) %>
                                         </td> 

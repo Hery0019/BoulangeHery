@@ -189,6 +189,16 @@
     <servlet-name>FormRecipeLossServlet</servlet-name>
   </servlet>
 
+  <servlet>
+    <servlet-class>servlet.ClientServlet</servlet-class>
+    <servlet-name>ClientServlet</servlet-name>
+  </servlet>
+
+  <servlet>
+    <servlet-class>servlet.FormClientServlet</servlet-class>
+    <servlet-name>FormClientServlet</servlet-name>
+  </servlet>
+
 
 
   <!-- Servlet mapping -->
@@ -321,6 +331,16 @@
   <servlet-mapping>
     <servlet-name>FormRecipeLossServlet</servlet-name>
     <url-pattern>/form-recipe-loss</url-pattern>
+  </servlet-mapping>
+
+  <servlet-mapping>
+    <servlet-name>ClientServlet</servlet-name>
+    <url-pattern>/client</url-pattern>
+  </servlet-mapping>
+
+  <servlet-mapping>
+    <servlet-name>FormClientServlet</servlet-name>
+    <url-pattern>/form-client</url-pattern>
   </servlet-mapping>
 
   <!-- Sessions : expiration après 30 min d'inactivité, cookie inaccessible au JavaScript.

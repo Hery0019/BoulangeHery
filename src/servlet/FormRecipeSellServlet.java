@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import dao.Client;
 import dao.Recipe;
 import dao.RecipeSell;
 import dao.User;
@@ -31,11 +32,13 @@ public class FormRecipeSellServlet extends HttpServlet {
         ArrayList<Recipe> recipies;
         ArrayList<Vendeur> vendeurs;
         ArrayList<User> users;
+        ArrayList<Client> clients;
 
         try {
             recipies = Recipe.all();
             vendeurs = Vendeur.all();
             users = User.all();
+            clients = Client.all();
 
             if (recipeSell == null) {
                 recipeSell = new RecipeSell();
@@ -53,6 +56,7 @@ public class FormRecipeSellServlet extends HttpServlet {
         req.setAttribute("recipies", recipies);
         req.setAttribute("vendeurs", vendeurs);
         req.setAttribute("users", users);
+        req.setAttribute("clients", clients);
         req.setAttribute("activeMenuItem", "recipe-sell");
         req.setAttribute("pageTitle", "Vente de Recette");
 

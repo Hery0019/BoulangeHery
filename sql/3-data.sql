@@ -1,5 +1,7 @@
 -- Vider les tables existantes
-TRUNCATE TABLE category, gotta_taste_user, recipe, recipe_ingredient, recipe_sell, vendeur, commission, commission_change, ingredient, step, review, perfume RESTART IDENTITY CASCADE;
+TRUNCATE TABLE category, gotta_taste_user, recipe, recipe_ingredient, recipe_sell, vendeur, commission,
+    commission_change, ingredient, step, review, perfume, client, production, recipe_loss,
+    ingredient_stock, recipe_stock RESTART IDENTITY CASCADE;
 
 -- Inserer des categories pour une boulangerie
 INSERT INTO category (category_name) VALUES
@@ -111,6 +113,11 @@ INSERT INTO review (id_user, id_recipe, rating, comment, review_date) VALUES
     (3, 8, 5, 'Tarte aux pommes bien equilibree en sucre.', '2024-12-17');
 
 
+INSERT INTO client (firstname, lastname, phone, email) VALUES
+    ('Sophie', 'Randria', '032 11 222 33', 'sophie.randria@example.com'),
+    ('Jean', 'Rakoto', '033 44 555 66', 'jean.rakoto@example.com'),
+    ('Hotel', 'Colbert', '020 22 202 02', 'achats@colbert.example.com');
+
 INSERT INTO commission_change (percent, commission_change_value, commission_change_date) VALUES
      (0.05, 200000, CURRENT_DATE);
 
@@ -142,3 +149,17 @@ INSERT INTO recipe_loss (id_recipe, id_user, quantity, reason, loss_date) VALUES
     (1, 1, 12, 'INVENDU', CURRENT_DATE - 2),
     (2, 2, 5,  'CASSE',   CURRENT_DATE - 1),
     (8, 1, 3,  'PERIME',  CURRENT_DATE);
+
+-- Ventes de demo, datees du jour pour que la regle de commission en vigueur s'applique.
+-- id_user = compte qui saisit, id_client = acheteur (NULL pour une vente au comptoir).
+INSERT INTO recipe_sell (id_vendeur, id_recipe, id_category, id_user, id_client, combien, argent, reste, sell_date) VALUES
+    (1, 1, 1, 1, 1,    150, 250000, 0, CURRENT_DATE),
+    (3, 8, 3, 3, 3,    80,  350000, 0, CURRENT_DATE),
+    (5, 2, 2, 1, NULL, 40,  110000, 0, CURRENT_DATE),
+    (2, 5, 2, 3, 2,    30,  95000,  0, CURRENT_DATE),
+    (6, 7, 3, 1, NULL, 60,  220000, 0, CURRENT_DATE);
+
+-- Changements de prix, pour alimenter l'historique
+UPDATE recipe SET price = 1600 WHERE id_recipe = 1;
+UPDATE recipe SET price = 2600 WHERE id_recipe = 2;
+UPDATE recipe SET price = 4200 WHERE id_recipe = 8;
