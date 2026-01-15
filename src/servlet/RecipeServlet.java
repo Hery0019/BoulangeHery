@@ -49,9 +49,26 @@ public class RecipeServlet extends HttpServlet {
             double minPrice = Params.doubleValue(req, "searchMinPrice", 0.0);
             double maxPrice = Params.doubleValue(req, "searchMaxPrice", 0.0);
 
+            String sort = Params.string(req, "sort", Recipe.DEFAULT_SORT);
+            if (!Recipe.isKnownSort(sort)) {
+                sort = Recipe.DEFAULT_SORT;
+            }
+            int page = Math.max(Params.intValue(req, "page", 1), 1);
+
+            int total = Recipe.countSearch(title, description, idCategory, idPerfume, minCookTime, maxCookTime,
+                    creator, minCreationDate, maxCreationDate, selectedIdsIngredient, minPrice, maxPrice);
+            int pages = Math.max((total + Recipe.PAGE_SIZE - 1) / Recipe.PAGE_SIZE, 1);
+            if (page > pages) {
+                page = pages;
+            }
             ArrayList<Recipe> recipes = Recipe.search(title, description, idCategory, idPerfume, minCookTime,
-                    maxCookTime, creator, minCreationDate, maxCreationDate, selectedIdsIngredient, minPrice, maxPrice);
+                    maxCookTime, creator, minCreationDate, maxCreationDate, selectedIdsIngredient, minPrice, maxPrice,
+                    sort, page, Recipe.PAGE_SIZE);
             req.setAttribute("recipes", recipes);
+            req.setAttribute("sort", sort);
+            req.setAttribute("page", page);
+            req.setAttribute("pages", pages);
+            req.setAttribute("totalRecipes", total);
             req.setAttribute("categories", categories);
             req.setAttribute("ingredients", ingredients);
             req.setAttribute("perfumes", perfumes);

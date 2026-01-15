@@ -1,6 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ page import="util.Html" %>
 <%@ page import="util.Money" %>
+<%@ page import="util.Links" %>
 <%@ page import="util.Csrf" %>
 <%@ page import="dao.Recipe, dao.Category, dao.Ingredient, dao.Perfume, java.util.ArrayList, util.SessionUtils" %>
 <% boolean connected = SessionUtils.canManageCatalog(request); %>
@@ -218,6 +219,35 @@
                             <a href="form-recipe" type="button" class="btn btn-success">Ajouter</a>
                         </div>
                         <% } %>
+                        <%
+                            String sortValue = (String) request.getAttribute("sort");
+                            int currentPage = (Integer) request.getAttribute("page");
+                            int totalPages = (Integer) request.getAttribute("pages");
+                            String baseQuery = Links.queryWithout(request, "page", "sort");
+                        %>
+                        <div class="card-body pt-0 d-flex flex-wrap justify-content-between align-items-center gap-2">
+                            <span class="text-muted">
+                                <%= Html.esc(request.getAttribute("totalRecipes")) %> recette(s) —
+                                page <%= currentPage %> sur <%= totalPages %>
+                            </span>
+                            <form method="GET" action="recipe" class="d-flex align-items-center gap-2">
+                                <% for (java.util.Map.Entry<String, String[]> entry : request.getParameterMap().entrySet()) {
+                                       if (entry.getKey().equals("sort") || entry.getKey().equals("page")) continue;
+                                       for (String value : entry.getValue()) { %>
+                                <input type="hidden" name="<%= Html.esc(entry.getKey()) %>" value="<%= Html.esc(value) %>">
+                                <% } } %>
+                                <label class="form-label mb-0" for="sort">Trier par</label>
+                                <select name="sort" id="sort" class="form-select form-select-sm" style="width: auto;"
+                                        onchange="this.form.submit()">
+                                    <option value="id" <% if ("id".equals(sortValue)) { %>selected<% } %>>Ordre d'ajout</option>
+                                    <option value="recent" <% if ("recent".equals(sortValue)) { %>selected<% } %>>Plus récentes</option>
+                                    <option value="title" <% if ("title".equals(sortValue)) { %>selected<% } %>>Titre</option>
+                                    <option value="price" <% if ("price".equals(sortValue)) { %>selected<% } %>>Prix décroissant</option>
+                                    <option value="margin" <% if ("margin".equals(sortValue)) { %>selected<% } %>>Marge décroissante</option>
+                                    <option value="stock" <% if ("stock".equals(sortValue)) { %>selected<% } %>>Stock croissant</option>
+                                </select>
+                            </form>
+                        </div>
 
                         <div class="card-body">
                             <!-- Grid Bootstrap pour un bon alignement -->
@@ -282,6 +312,27 @@
                                 </div>
                                 <% } %>
                             </div>
+                        </div>
+                        <div class="card-body">
+                            <nav>
+                                <ul class="pagination mb-0 justify-content-center">
+                                    <li class="page-item <% if (currentPage <= 1) { %>disabled<% } %>">
+                                        <a class="page-link" href="recipe?<%= baseQuery %>sort=<%= Html.esc(sortValue) %>&page=<%= currentPage - 1 %>">
+                                            <i class="tf-icon bx bx-chevron-left"></i>
+                                        </a>
+                                    </li>
+                                    <% for (int p = 1; p <= totalPages; p++) { %>
+                                    <li class="page-item <% if (p == currentPage) { %>active<% } %>">
+                                        <a class="page-link" href="recipe?<%= baseQuery %>sort=<%= Html.esc(sortValue) %>&page=<%= p %>"><%= p %></a>
+                                    </li>
+                                    <% } %>
+                                    <li class="page-item <% if (currentPage >= totalPages) { %>disabled<% } %>">
+                                        <a class="page-link" href="recipe?<%= baseQuery %>sort=<%= Html.esc(sortValue) %>&page=<%= currentPage + 1 %>">
+                                            <i class="tf-icon bx bx-chevron-right"></i>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
                         </div>
                     </div>
                 </div>

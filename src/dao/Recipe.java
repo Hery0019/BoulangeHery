@@ -314,147 +314,165 @@ public class Recipe {
         }
     }
 
+    /** Tris proposés, associés à leur clause SQL : rien d'autre n'est accepté. */
+    private static final java.util.Map<String, String> SORTS = java.util.Map.of(
+            "recent", "r.created_date DESC, r.id_recipe DESC",
+            "title", "r.title ASC",
+            "price", "r.price DESC",
+            "margin", "(r.price - c.cost) DESC",
+            "stock", "COALESCE(s.reste, 0) ASC",
+            "id", "r.id_recipe ASC");
+
+    public static final String DEFAULT_SORT = "id";
+    public static final int PAGE_SIZE = 6; // deux rangées de trois cartes
+
+    public static boolean isKnownSort(String sort) {
+        return SORTS.containsKey(sort);
+    }
+
+    /**
+     * Critères communs à {@link #search} et {@link #countSearch}, écrits une
+     * seule fois : la liste et son total ne peuvent pas diverger.
+     *
+     * Convention du projet : 0 (identifiants, prix), {@code null} (dates,
+     * heures) et {@code ""} (texte) valent « critère non renseigné ».
+     */
+    private static void criteria(StringBuilder sql, java.util.List<Object> params,
+            String searchTitle, String searchDescription, int searchIdCategory, int searchIdPerfume,
+            LocalTime minCookTime, LocalTime maxCookTime, String searchCreator,
+            LocalDate minCreationDate, LocalDate maxCreationDate, String[] idIngredients,
+            double minPrice, double maxPrice) {
+
+        sql.append(" WHERE title ILIKE ? AND recipe_description ILIKE ?");
+        params.add("%" + searchTitle.toLowerCase() + "%");
+        params.add("%" + searchDescription + "%");
+
+        if (searchIdCategory != 0) {
+            sql.append(" AND id_category = ?");
+            params.add(searchIdCategory);
+        }
+        if (searchIdPerfume != 0) {
+            sql.append(" AND id_perfume = ?");
+            params.add(searchIdPerfume);
+        }
+        if (minCookTime != null) {
+            sql.append(" AND cook_time >= ?");
+            params.add(Time.valueOf(minCookTime));
+        }
+        if (maxCookTime != null) {
+            sql.append(" AND cook_time <= ?");
+            params.add(Time.valueOf(maxCookTime));
+        }
+        sql.append(" AND COALESCE(u.firstname || ' ' || u.lastname, r.created_by, '') ILIKE ?");
+        params.add("%" + searchCreator + "%");
+
+        if (minCreationDate != null) {
+            sql.append(" AND created_date >= ?");
+            params.add(Date.valueOf(minCreationDate));
+        }
+        if (maxCreationDate != null) {
+            sql.append(" AND created_date <= ?");
+            params.add(Date.valueOf(maxCreationDate));
+        }
+        if (minPrice != 0.0) {
+            sql.append(" AND r.price >= ?");
+            params.add(minPrice);
+        }
+        if (maxPrice != 0.0) {
+            sql.append(" AND r.price <= ?");
+            params.add(maxPrice);
+        }
+        if (idIngredients != null && idIngredients.length > 0) {
+            sql.append(" AND r.id_recipe IN (SELECT id_recipe FROM recipe_ingredient WHERE id_ingredient IN (?");
+            for (int i = 1; i < idIngredients.length; i++) {
+                sql.append(", ?");
+            }
+            sql.append(") GROUP BY id_recipe HAVING COUNT(DISTINCT id_ingredient) = ?)");
+            for (String idIngredient : idIngredients) {
+                params.add(Integer.parseInt(idIngredient));
+            }
+            params.add(idIngredients.length);
+        }
+    }
+
+    /** Nombre de recettes correspondant aux critères, pour la pagination. */
+    public static int countSearch(
+            String searchTitle, String searchDescription, int searchIdCategory, int searchIdPerfume,
+            LocalTime minCookTime, LocalTime maxCookTime, String searchCreator,
+            LocalDate minCreationDate, LocalDate maxCreationDate, String[] idIngredients,
+            double minPrice, double maxPrice) throws Exception {
+
+        StringBuilder sql = new StringBuilder(
+                "SELECT count(*) FROM recipe r"
+                        + " JOIN recipe_cost c ON c.id_recipe = r.id_recipe"
+                        + " LEFT JOIN recipe_stock s ON s.id_recipe = r.id_recipe"
+                        + " LEFT JOIN gotta_taste_user u ON u.id_user = r.id_created_by");
+        java.util.List<Object> params = new java.util.ArrayList<>();
+        criteria(sql, params, searchTitle, searchDescription, searchIdCategory, searchIdPerfume, minCookTime,
+                maxCookTime, searchCreator, minCreationDate, maxCreationDate, idIngredients, minPrice, maxPrice);
+
+        try (Connection connection = DBConnection.getPostgesConnection();
+                PreparedStatement statement = connection.prepareStatement(sql.toString())) {
+            bind(statement, params);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                return resultSet.next() ? resultSet.getInt(1) : 0;
+            }
+        }
+    }
+
+    /**
+     * Une page de résultats. {@code sort} doit être une clé de {@link #SORTS}
+     * (sinon le tri par défaut s'applique) et {@code page} commence à 1.
+     */
     public static ArrayList<Recipe> search(
-            String searchTitle,
-            String searchDescription,
-            int searchIdCategory,
-            int searchIdPerfume,
-            LocalTime minCookTime,
-            LocalTime maxCookTime,
-            String searchCreator,
-            LocalDate minCreationDate,
-            LocalDate maxCreationDate,
-            String[] idIngredients,
-            double minPrice,
-            double maxPrice) throws Exception {
+            String searchTitle, String searchDescription, int searchIdCategory, int searchIdPerfume,
+            LocalTime minCookTime, LocalTime maxCookTime, String searchCreator,
+            LocalDate minCreationDate, LocalDate maxCreationDate, String[] idIngredients,
+            double minPrice, double maxPrice, String sort, int page, int pageSize) throws Exception {
 
         ArrayList<Recipe> recipes = new ArrayList<>();
-        Connection connection = null;
-        PreparedStatement statement = null;
-        ResultSet resultSet = null;
+        StringBuilder sql = new StringBuilder(SELECT_WITH_COST);
+        java.util.List<Object> params = new java.util.ArrayList<>();
+        criteria(sql, params, searchTitle, searchDescription, searchIdCategory, searchIdPerfume, minCookTime,
+                maxCookTime, searchCreator, minCreationDate, maxCreationDate, idIngredients, minPrice, maxPrice);
 
-        try {
-            connection = DBConnection.getPostgesConnection();
-
-            StringBuilder sql = new StringBuilder(
-                    SELECT_WITH_COST +
-                            " WHERE title ILIKE ?" +
-                            " AND recipe_description ILIKE ?");
-
-            if (searchIdCategory != 0) {
-                sql.append(" AND id_category = ?");
-            }
-            if (searchIdPerfume != 0) {
-                sql.append(" AND id_perfume = ?");
-            }
-            if (minCookTime != null) {
-                sql.append(" AND cook_time >= ?");
-            }
-            if (maxCookTime != null) {
-                sql.append(" AND cook_time <= ?");
-            }
-            sql.append(" AND COALESCE(u.firstname || ' ' || u.lastname, r.created_by, '') ILIKE ?");
-
-            if (minCreationDate != null) {
-                sql.append(" AND created_date >= ?");
-            }
-            if (maxCreationDate != null) {
-                sql.append(" AND created_date <= ?");
-            }
-
-            if (minPrice != 0.0) {
-                sql.append(" AND r.price >= ?");
-            }
-            if (maxPrice != 0.0) {
-                sql.append(" AND r.price <= ?");
-            }
-
-            if (idIngredients != null && idIngredients.length > 0) {
-                sql.append(" AND r.id_recipe IN (");
-                sql.append(" SELECT id_recipe FROM recipe_ingredient WHERE id_ingredient IN (");
-                sql.append("?");
-                for (int i = 1; i < idIngredients.length; i++) {
-                    sql.append(", ?");
-                }
-                sql.append(") GROUP BY id_recipe HAVING COUNT(DISTINCT id_ingredient) = ?)");
-            }
-
-            sql.append(" ORDER BY r.id_recipe ASC");
-
-            statement = connection.prepareStatement(sql.toString());
-
-            int paramIndex = 1;
-            statement.setString(paramIndex++, "%" + searchTitle.toLowerCase() + "%");
-            statement.setString(paramIndex++, "%" + searchDescription + "%");
-
-            if (searchIdCategory != 0) {
-                statement.setInt(paramIndex++, searchIdCategory);
-            }
-            if (searchIdPerfume != 0) {
-                statement.setInt(paramIndex++, searchIdPerfume);
-            }
-            if (minCookTime != null) {
-                statement.setTime(paramIndex++, Time.valueOf(minCookTime));
-            }
-            if (maxCookTime != null) {
-                statement.setTime(paramIndex++, Time.valueOf(maxCookTime));
-            }
-            statement.setString(paramIndex++, "%" + searchCreator + "%");
-
-            if (minCreationDate != null) {
-                statement.setDate(paramIndex++, Date.valueOf(minCreationDate));
-            }
-            if (maxCreationDate != null) {
-                statement.setDate(paramIndex++, Date.valueOf(maxCreationDate));
-            }
-
-            if (minPrice != 0.0) {
-                statement.setDouble(paramIndex++, minPrice);
-            }
-
-            if (maxPrice != 0.0) {
-                statement.setDouble(paramIndex++, maxPrice);
-            }
-
-            if (idIngredients != null && idIngredients.length > 0) {
-                for (String idIngredient : idIngredients) {
-                    statement.setInt(paramIndex++, Integer.parseInt(idIngredient));
-                }
-                statement.setInt(paramIndex++, idIngredients.length);
-            }
-            resultSet = statement.executeQuery();
-
-            while (resultSet.next()) {
-                int id = resultSet.getInt("id_recipe");
-                String title = resultSet.getString("title");
-                String description = resultSet.getString("recipe_description");
-                int idCategory = resultSet.getInt("id_category");
-                int idPerfume = resultSet.getInt("id_perfume");
-                LocalTime cookTime = resultSet.getTime("cook_time").toLocalTime();
-                String createdBy = resultSet.getString("author");
-                LocalDate createdDate = resultSet.getDate("created_date").toLocalDate();
-                double price = resultSet.getDouble("price");
-                String picture = resultSet.getString("picture");
-
-                Recipe recipe = new Recipe(id, title, description, idCategory, idPerfume, cookTime, createdBy,
-                        createdDate, price, picture);
-                recipe.setCost(resultSet.getDouble("cost"));
-                recipe.setStock(resultSet.getInt("stock"), resultSet.getInt("seuil_alerte"));
-                recipe.setIdCreatedBy(resultSet.getInt("id_created_by"));
-                recipes.add(recipe);
-            }
-        } catch (Exception e) {
-            throw e;
-        } finally {
-            if (resultSet != null)
-                resultSet.close();
-            if (statement != null)
-                statement.close();
-            if (connection != null)
-                connection.close();
+        sql.append(" ORDER BY ").append(SORTS.getOrDefault(sort, SORTS.get(DEFAULT_SORT)));
+        if (pageSize > 0) {
+            sql.append(" LIMIT ? OFFSET ?");
+            params.add(pageSize);
+            params.add((Math.max(page, 1) - 1) * pageSize);
         }
 
+        try (Connection connection = DBConnection.getPostgesConnection();
+                PreparedStatement statement = connection.prepareStatement(sql.toString())) {
+            bind(statement, params);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    Recipe recipe = new Recipe(
+                            resultSet.getInt("id_recipe"),
+                            resultSet.getString("title"),
+                            resultSet.getString("recipe_description"),
+                            resultSet.getInt("id_category"),
+                            resultSet.getInt("id_perfume"),
+                            resultSet.getTime("cook_time").toLocalTime(),
+                            resultSet.getString("author"),
+                            resultSet.getDate("created_date").toLocalDate(),
+                            resultSet.getDouble("price"),
+                            resultSet.getString("picture"));
+                    recipe.setCost(resultSet.getDouble("cost"));
+                    recipe.setStock(resultSet.getInt("stock"), resultSet.getInt("seuil_alerte"));
+                    recipe.setIdCreatedBy(resultSet.getInt("id_created_by"));
+                    recipes.add(recipe);
+                }
+            }
+        }
         return recipes;
+    }
+
+    private static void bind(PreparedStatement statement, java.util.List<Object> params) throws Exception {
+        for (int i = 0; i < params.size(); i++) {
+            statement.setObject(i + 1, params.get(i));
+        }
     }
 
     public void delete() throws Exception {
