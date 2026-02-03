@@ -67,6 +67,7 @@ public class AuthFilter implements Filter {
             Map.entry("/commission", SALES),
             Map.entry("/client", SALES),
             Map.entry("/export", SALES),
+            Map.entry("/receipt", SALES),
             Map.entry("/form-client", SALES),
             // Un avis peut être rédigé par n'importe quel employé connecté.
             Map.entry("/review", ANY),

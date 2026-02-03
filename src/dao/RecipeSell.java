@@ -242,6 +242,51 @@ public class RecipeSell {
         }
     }
 
+    /** Une vente et ses libellés, ou {@code null} si l'identifiant n'existe pas. */
+    public static RecipeSell findById(int id) throws Exception {
+        try (Connection connection = DBConnection.getPostgesConnection();
+                PreparedStatement statement = connection.prepareStatement(
+                        SELECT_JOINED + " WHERE s.id_recipe_sell = ?")) {
+            statement.setInt(1, id);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (!resultSet.next()) {
+                    return null;
+                }
+                RecipeSell sell = new RecipeSell(
+                        resultSet.getInt("id_recipe_sell"),
+                        resultSet.getInt("id_vendeur"),
+                        resultSet.getInt("id_recipe"),
+                        resultSet.getInt("id_category"),
+                        resultSet.getInt("id_user"),
+                        resultSet.getInt("combien"),
+                        resultSet.getDouble("argent"),
+                        resultSet.getDouble("reste"),
+                        resultSet.getDate("sell_date").toLocalDate());
+                sell.idClient = resultSet.getInt("id_client");
+                sell.recipeTitle = resultSet.getString("title");
+                sell.categoryName = resultSet.getString("category_name");
+                sell.clientName = resultSet.getString("client_name");
+                sell.userName = resultSet.getString("user_name");
+                sell.vendeurName = resultSet.getString("vendeur_name");
+                return sell;
+            }
+        }
+    }
+
+    /**
+     * Prix unitaire pratiqué lors de la vente, reconstitué depuis les montants :
+     * {@code reste = argent - combien x prix}. Le prix courant de la recette a
+     * pu changer depuis, le ticket doit montrer celui du jour de la vente.
+     */
+    public double getUnitPrice() {
+        return combien == 0 ? 0.0 : (argent - reste) / combien;
+    }
+
+    /** Montant réellement dû pour cette vente. */
+    public double getTotal() {
+        return argent - reste;
+    }
+
     public static ArrayList<RecipeSell> search(
         int searchIdRecipe,
         int searchIdCategory,

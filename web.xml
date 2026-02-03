@@ -195,6 +195,11 @@
   </servlet>
 
   <servlet>
+    <servlet-class>servlet.ReceiptServlet</servlet-class>
+    <servlet-name>ReceiptServlet</servlet-name>
+  </servlet>
+
+  <servlet>
     <servlet-class>servlet.ClientServlet</servlet-class>
     <servlet-name>ClientServlet</servlet-name>
   </servlet>
@@ -342,6 +347,11 @@
   <servlet-mapping>
     <servlet-name>ExportServlet</servlet-name>
     <url-pattern>/export</url-pattern>
+  </servlet-mapping>
+
+  <servlet-mapping>
+    <servlet-name>ReceiptServlet</servlet-name>
+    <url-pattern>/receipt</url-pattern>
   </servlet-mapping>
 
   <servlet-mapping>

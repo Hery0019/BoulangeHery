@@ -245,6 +245,10 @@
                                                         <i class="bx bx-book-content me-1"></i>
                                                         Détails
                                                     </a>
+                                                    <a class="dropdown-item" href="receipt?id=<%= Html.esc(recipeSell.getId()) %>" target="_blank">
+                                                        <i class="bx bx-receipt me-1"></i>
+                                                        Ticket
+                                                    </a>
                                                     <% if (connected) { %>
                                                     <a class="dropdown-item"
                                                     href="form-recipe-sell?action=update&id=<%= Html.esc(recipeSell.getId()) %>">
