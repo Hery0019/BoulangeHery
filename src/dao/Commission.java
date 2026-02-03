@@ -121,8 +121,12 @@ public class Commission {
             connection = DBConnection.getPostgesConnection();
 
             StringBuilder sql = new StringBuilder(
-                    "SELECT c.*, v.sexe FROM commission c " +
-                    "JOIN vendeur v ON c.id_vendeur = v.id_vendeur WHERE 1=1");
+                    // Libellés joints : la liste rappelait findById pour le vendeur et la
+                    // recette de chaque ligne, soit deux requêtes par commission.
+                    "SELECT c.*, v.sexe, v.firstname || ' ' || v.lastname AS vendeur_name, r.title" +
+                    " FROM commission c" +
+                    " JOIN vendeur v ON c.id_vendeur = v.id_vendeur" +
+                    " JOIN recipe r ON r.id_recipe = c.id_recipe WHERE 1=1");
 
             if (searchidVendeur != 0) {
                 sql.append(" AND c.id_vendeur = ?");
@@ -176,7 +180,11 @@ public class Commission {
                 double searchCommissionAmount = resultSet.getDouble("commission_amount");
                 String vendeurSexe = resultSet.getString("sexe");
 
-                commissions.add(new Commission(id, idVendeur, idRecipe, searchCommissionAmount, commissionDate, vendeurSexe));
+                Commission commission =
+                        new Commission(id, idVendeur, idRecipe, searchCommissionAmount, commissionDate, vendeurSexe);
+                commission.setVendeurName(resultSet.getString("vendeur_name"));
+                commission.setRecipeTitle(resultSet.getString("title"));
+                commissions.add(commission);
             }
         } catch (Exception e) {
             throw e;
@@ -194,6 +202,30 @@ public class Commission {
 
   
     
+
+    /** Libellés lus par la même requête que la commission. */
+    private String vendeurName = "";
+    private String recipeTitle = "";
+
+    public String getVendeurSexe() {
+        return vendeurSexe;
+    }
+
+    public String getVendeurName() {
+        return vendeurName;
+    }
+
+    public void setVendeurName(String vendeurName) {
+        this.vendeurName = vendeurName;
+    }
+
+    public String getRecipeTitle() {
+        return recipeTitle;
+    }
+
+    public void setRecipeTitle(String recipeTitle) {
+        this.recipeTitle = recipeTitle;
+    }
 
     public int getId() {
         return id;

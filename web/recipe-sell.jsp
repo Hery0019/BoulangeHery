@@ -1,6 +1,7 @@
 
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ page import="util.Html" %>
+<%@ page import="util.Links" %>
 <%@ page import="util.Money" %>
 <%@ page import="util.Csrf" %>
 <%@ page import="dao.Recipe, dao.Category, dao.User, dao.RecipeSell, java.util.ArrayList, util.SessionUtils" %>
@@ -188,6 +189,11 @@
                     <!-- Basic Bootstrap Table -->
                     <div class="card">
                         <h5 class="card-header">Liste des ventes de recettes</h5>
+                        <div class="card-body pb-0">
+                            <a class="btn btn-outline-secondary btn-sm" href="export?<%= Links.queryWithout(request) %>type=sales">
+                                <i class="bx bx-download me-1"></i> Exporter en CSV
+                            </a>
+                        </div>
                         <% if (connected) { %>
                         <div class="card-body"><a href="form-recipe-sell" type="button" class="btn btn-success">Ajouter</a>
                         </div>

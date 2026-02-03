@@ -102,7 +102,7 @@ public class RecipeSell {
 
         try {
             connection = DBConnection.getPostgesConnection();
-            statement = connection.prepareStatement("SELECT * FROM recipe_sell");
+            statement = connection.prepareStatement(SELECT_JOINED);
             resultSet = statement.executeQuery();
 
             while (resultSet.next()) {
@@ -359,7 +359,15 @@ public class RecipeSell {
                 double reste = resultSet.getDouble("reste");
                 LocalDate sellDate = resultSet.getDate("sell_date").toLocalDate();
 
-                recipeSells.add(new RecipeSell(id, idVendeur, idRecipe, idCategory, idUser, combien, argent, reste, sellDate));
+                RecipeSell recipeSell =
+                        new RecipeSell(id, idVendeur, idRecipe, idCategory, idUser, combien, argent, reste, sellDate);
+                recipeSell.idClient = resultSet.getInt("id_client");
+                recipeSell.recipeTitle = resultSet.getString("title");
+                recipeSell.categoryName = resultSet.getString("category_name");
+                recipeSell.clientName = resultSet.getString("client_name");
+                recipeSell.userName = resultSet.getString("user_name");
+                recipeSell.vendeurName = resultSet.getString("vendeur_name");
+                recipeSells.add(recipeSell);
             }
         } catch (Exception e) {
             throw e;

@@ -1,5 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ page import="util.Html" %>
+<%@ page import="util.Links" %>
 <%@ page import="util.Money" %>
 <%@ page import="dao.Recipe, dao.Vendeur, dao.Ingredient, dao.Commission, dao.Perfume, java.util.ArrayList, util.SessionUtils" %>
 <% boolean connected = SessionUtils.canSell(request); %>
@@ -139,6 +140,11 @@
                     <!-- Basic Bootstrap Table -->
                     <div class="card">
                         <h5 class="card-header">Liste des commissions</h5>
+                        <div class="card-body pb-0">
+                            <a class="btn btn-outline-secondary btn-sm" href="export?<%= Links.queryWithout(request) %>type=commissions">
+                                <i class="bx bx-download me-1"></i> Exporter en CSV
+                            </a>
+                        </div>
                        
                         <div class="table-responsive text-nowrap" style="overflow: auto visible">
                             <table class="table">
@@ -156,9 +162,9 @@
                                 <tr>
                                     <td><strong><%= Html.esc(commission.getId()) %>
                                     </strong></td>
-                                    <td><%= Html.esc(Vendeur.findById(commission.getIdVendeur()).getFullName()) %>
+                                    <td><%= Html.esc(commission.getVendeurName()) %>
                                     </td>
-                                    <td><%= Html.esc(Recipe.findById(commission.getIdRecipe()).getTitle()) %>
+                                    <td><%= Html.esc(commission.getRecipeTitle()) %>
                                     </td> 
                                     <td><%= Html.esc(Money.format(commission.getCommissionsAmount())) %>
                                     </td>
