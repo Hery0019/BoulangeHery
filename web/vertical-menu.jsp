@@ -29,6 +29,16 @@
 
     <ul class="menu-inner py-1">
 
+        <% if (!menuVisitor) { %>
+        <!-- Tableau de bord -->
+        <li class="menu-item <% if (activeMenuItem.equals("dashboard")) { %>active<% } %>">
+            <a href="dashboard" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-home-circle"></i>
+                <div>Tableau de bord</div>
+            </a>
+        </li>
+        <% } %>
+
         <!-- Recipe -->
         <li class="menu-item <% if (activeMenuItem.equals("recipe")) { %>active<% } %>">
             <a href="recipe" class="menu-link">

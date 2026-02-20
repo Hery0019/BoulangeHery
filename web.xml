@@ -190,6 +190,11 @@
   </servlet>
 
   <servlet>
+    <servlet-class>servlet.DashboardServlet</servlet-class>
+    <servlet-name>DashboardServlet</servlet-name>
+  </servlet>
+
+  <servlet>
     <servlet-class>servlet.ExportServlet</servlet-class>
     <servlet-name>ExportServlet</servlet-name>
   </servlet>
@@ -341,6 +346,11 @@
   <servlet-mapping>
     <servlet-name>FormRecipeLossServlet</servlet-name>
     <url-pattern>/form-recipe-loss</url-pattern>
+  </servlet-mapping>
+
+  <servlet-mapping>
+    <servlet-name>DashboardServlet</servlet-name>
+    <url-pattern>/dashboard</url-pattern>
   </servlet-mapping>
 
   <!-- Export CSV des ventes et des commissions -->

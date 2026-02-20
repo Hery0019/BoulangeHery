@@ -69,6 +69,8 @@ public class AuthFilter implements Filter {
             Map.entry("/export", SALES),
             Map.entry("/receipt", SALES),
             Map.entry("/form-client", SALES),
+            // Le tableau de bord n'affiche que ce que le rôle autorise (voir DashboardServlet).
+            Map.entry("/dashboard", ANY),
             // Un avis peut être rédigé par n'importe quel employé connecté.
             Map.entry("/review", ANY),
             Map.entry("/form-review", ANY));
