@@ -5,6 +5,9 @@ temp/
 out/
 target/
 
+# Notes locales d'outillage (non versionnées)
+CLAUDE.md
+
 # IDE
 .idea/
 *.iml
